@@ -16,12 +16,13 @@ def requirements():
 
 setup(
     name='abem',
-    version='0.0a5',
+    version='0.1-alpha',
     description='Boundary Element Method for Acoustic Simulations',
     long_description=readme(),
     long_description_content_type='text/markdown',
-    url='http://github.com/fjargsto/AcousticBEM',
+    url='http://github.com/fjargsto/abem',
     author='Frank Jargstorff',
+    download_url='https://github.com/fjargsto/abem/archive/v0.1-alpha.tar.gz',
     license='GNU General Public License',
     packages=['abem'],
     install_requires=requirements(),
