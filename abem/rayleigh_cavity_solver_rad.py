@@ -36,8 +36,8 @@ class RayleighCavitySolverRAD(RayleighCavitySolver):
             for j in range(m+n):
                 qa, qb = self.geometry.edge_vertices(j)
 
-                element_m = compute_m(k, p, qa, qb, i == j)
-                element_l = compute_l(k, p, qa, qb, i == j)
+                element_m = m_rad(k, p, qa, qb, i == j)
+                element_l = l_rad(k, p, qa, qb, i == j)
 
                 M[i,         j] = -element_m
                 M[i, j + m + n] = element_l
@@ -59,8 +59,8 @@ class RayleighCavitySolverRAD(RayleighCavitySolver):
             sum = 0.0
             for j in range(solution.phis.size):
                 qa, qb = self.geometry.edge_vertices(j)
-                element_l = compute_l(solution.k, p, qa, qb, False)
-                element_m = compute_m(solution.k, p, qa, qb, False)
+                element_l = l_rad(solution.k, p, qa, qb, False)
+                element_m = m_rad(solution.k, p, qa, qb, False)
                 sum += element_l * solution.velocities[j] - element_m * solution.phis[j]
             phis[i] = sum
 
@@ -74,7 +74,7 @@ class RayleighCavitySolverRAD(RayleighCavitySolver):
             sum = 0.0
             for j in range(self.open_elements):
                 qa, qb = self.geometry.edge_vertices(j)
-                element_l = compute_l(solution.k, p, qa, qb, False)
+                element_l = l_rad(solution.k, p, qa, qb, False)
                 sum += -2.0 * element_l * solution.velocities[j]
             phis[i] = sum
 

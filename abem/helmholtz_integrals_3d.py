@@ -4,25 +4,24 @@ from .normals import normal_3d
 
 
 def complex_quad(func, a, b, c):
-    samples = np.array([[0.333333333333333, 0.333333333333333, 0.225000000000000],                                                 
-                        [0.797426985353087, 0.101286507323456, 0.125939180544827],                                                 
+    samples = np.array([[0.333333333333333, 0.333333333333333, 0.225000000000000],
+                        [0.797426985353087, 0.101286507323456, 0.125939180544827],
                         [0.101286507323456, 0.797426985353087, 0.125939180544827],                                                 
                         [0.101286507323456, 0.101286507323456, 0.125939180544827],                                                 
                         [0.470142064105115, 0.470142064105115, 0.132394152788506],                                                 
                         [0.470142064105115, 0.059715871789770, 0.132394152788506],                                                 
                         [0.059715871789770, 0.470142064105115, 0.132394152788506]],
                        dtype=np.float32)
-                                                                                                                               
-    deltaB = b - a                                                                                                                 
-    deltaC = c - a                                                                                                                 
-    sum = 0.0                                                                                                                      
+    ab = b - a
+    ac = c - a
+    sum_ = 0.0
     for n in range(samples.shape[0]):                                                                                              
-        x = a + samples[n, 0] * deltaB + samples[n, 1] * deltaC                                                                    
-        sum += samples[n, 2] * func(x)                                                                                             
-    return sum * 0.5 * norm(np.cross(deltaB, deltaC))                                                                              
+        x = a + samples[n, 0] * ab + samples[n, 1] * ac
+        sum_ += samples[n, 2] * func(x)
+    return sum_ * 0.5 * norm(np.cross(ab, ac))
 
 
-def compute_l(k, p, qa, qb, qc, p_on_element):
+def l_3d(k, p, qa, qb, qc, p_on_element):
     if p_on_element:
         if k == 0.0:                                                                                                               
             ab = qb - qa
@@ -55,13 +54,13 @@ def compute_l(k, p, qa, qb, qc, p_on_element):
                 R = norm(r)                                                                                                        
                 ikr = 1j * k * R                                                                                                   
                 return (np.exp(ikr) - 1.0) / R                                                                                     
-            L0 = compute_l(0.0, p, qa, qb, qc, True)
+            L0 = l_3d(0.0, p, qa, qb, qc, True)
             Lk = complex_quad(func, qa, qb, p) + complex_quad(func, qb, qc, p) \
                  + complex_quad(func, qc, qa, p)
             return L0 + Lk / (4.0 * np.pi)                                                                                         
     else:                                                                                                                          
-        if k == 0.0:                                                                                                               
-            def func(x):                                                                                                           
+        if k == 0.0:
+            def func(x):
                 r = p - x                                                                                                          
                 R = norm(r)                                                                                                        
                 return 1.0 / R                                                                                                     
@@ -75,7 +74,7 @@ def compute_l(k, p, qa, qb, qc, p_on_element):
             return complex_quad(func, qa, qb, qc) / (4.0 * np.pi)
 
 
-def compute_m(k, p, qa, qb, qc, p_on_element):
+def m_3d(k, p, qa, qb, qc, p_on_element):
     if p_on_element:
         return 0.0                                                                                                                 
     else:                                                                                                                          
@@ -97,7 +96,7 @@ def compute_m(k, p, qa, qb, qc, p_on_element):
             return complex_quad(func, qa, qb, qc) / (4.0 * np.pi)
 
                                                                                                                                
-def compute_mt(k, p, vecp, qa, qb, qc, p_on_element):
+def mt_3d(k, p, vecp, qa, qb, qc, p_on_element):
     if p_on_element:
         return 0.0                                                                                                                 
     else:                                                                                                                          
@@ -118,7 +117,7 @@ def compute_mt(k, p, vecp, qa, qb, qc, p_on_element):
             return complex_quad(func, qa, qb, qc) / (4.0 * np.pi)
 
                                                                                                                                
-def compute_n(k, p, vecp, qa, qb, qc, p_on_element):
+def n_3d(k, p, vecp, qa, qb, qc, p_on_element):
     if p_on_element:
         if k == 0.0:                                                                                                               
             ab = qb - qa
@@ -163,13 +162,13 @@ def compute_n(k, p, vecp, qa, qb, qc, p_on_element):
                 fpgrr = (np.exp(ikr) * (2.0 - 2.0*ikr - kr*kr) - 2.0) / (R * np.dot(r, r))                                         
                                                                                                                                
                 return fpgr * rnpnq + fpgrr * rnprnq + (0.5*k*k) * fpg                                                             
-            N0 = compute_n(0.0, p, vecp, qa, qb, qc, True)
-            L0 = compute_l(0.0, p, qa, qb, qc, True)
+            N0 = n_3d(0.0, p, vecp, qa, qb, qc, True)
+            L0 = l_3d(0.0, p, qa, qb, qc, True)
             Nk = complex_quad(func, qa, qb, p) + complex_quad(func, qb, qc, p) + complex_quad(func, qc, qa, p)
             return N0 - (0.5*k*k) * L0 + Nk / (4.0 * np.pi)                                                                        
     else:                                                                                                                          
-        if k == 0.0:                                                                                                               
-            return 0.0                                                                                                             
+        if k == 0.0:
+            return 0.0
         else:                                                                                                                      
             def func(x):                                                                                                           
                 r = p - x

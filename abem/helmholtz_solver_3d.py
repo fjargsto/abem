@@ -3,9 +3,9 @@ from .helmholtz_solver import HelmholtzSolver
 
 bOptimized = True
 if bOptimized:
-    from .helmholtz_integrals_3d_c import compute_l, compute_m, compute_mt, compute_n
+    from .helmholtz_integrals_3d_c import l_3d, m_3d, mt_3d, n_3d
 else:
-    from .helmholtz_integrals_3d import compute_l, compute_m, compute_mt, compute_n
+    from .helmholtz_integrals_3d import l_3d, m_3d, mt_3d, n_3d
 
     
 class HelmholtzSolver3D(HelmholtzSolver):
@@ -26,10 +26,10 @@ class HelmholtzSolver3D(HelmholtzSolver):
             for j in range(self.len()):
                 qa, qb, qc = self.geometry.triangle_vertices(j)
 
-                element_l = compute_l(k, p, qa, qb, qc, i == j)
-                element_m = compute_m(k, p, qa, qb, qc, i == j)
-                element_mt = compute_mt(k, p, normal, qa, qb, qc, i == j)
-                element_n = compute_n(k, p, normal, qa, qb, qc, i == j)
+                element_l = l_3d(k, p, qa, qb, qc, i == j)
+                element_m = m_3d(k, p, qa, qb, qc, i == j)
+                element_mt = mt_3d(k, p, normal, qa, qb, qc, i == j)
+                element_n = n_3d(k, p, normal, qa, qb, qc, i == j)
 
                 A[i, j] = element_l + mu * element_mt
                 B[i, j] = element_m + mu * element_n
@@ -63,8 +63,8 @@ class HelmholtzSolver3D(HelmholtzSolver):
             sum = incident_phis[i]
             for j in range(solution.phis.size):
                 qa, qb, qc = self.geometry.triangle_vertices(j)
-                element_l = compute_l(solution.k, p, qa, qb, qc, False)
-                element_m = compute_m(solution.k, p, qa, qb, qc, False)
+                element_l = l_3d(solution.k, p, qa, qb, qc, False)
+                element_m = m_3d(solution.k, p, qa, qb, qc, False)
                 if orientation == 'interior':
                     sum += element_l * solution.velocities[j] - element_m * solution.phis[j]
                 elif orientation == 'exterior':

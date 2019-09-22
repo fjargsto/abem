@@ -3,9 +3,9 @@ from .helmholtz_solver import HelmholtzSolver
 
 bOptimized = True
 if bOptimized:
-    from .helmholtz_integrals_rad_c import compute_l, compute_m, compute_mt, compute_n
+    from .helmholtz_integrals_rad_c import l_rad, m_rad, mt_rad, n_rad
 else:
-    from .helmholtz_integrals_rad import compute_l, compute_m, compute_mt, compute_n
+    from .helmholtz_integrals_rad import l_rad, m_rad, mt_rad, n_rad
 
 
 class HelmholtzSolverRAD(HelmholtzSolver):
@@ -28,10 +28,10 @@ class HelmholtzSolverRAD(HelmholtzSolver):
             for j in range(self.len()):
                 qa, qb = self.geometry.edge_vertices(j)
 
-                element_l = compute_l(k, center, qa, qb, i == j)
-                element_m = compute_m(k, center, qa, qb, i == j)
-                element_mt = compute_mt(k, center, normal, qa, qb, i == j)
-                element_n = compute_n(k, center, normal, qa, qb, i == j)
+                element_l = l_rad(k, center, qa, qb, i == j)
+                element_m = m_rad(k, center, qa, qb, i == j)
+                element_mt = mt_rad(k, center, normal, qa, qb, i == j)
+                element_n = n_rad(k, center, normal, qa, qb, i == j)
                 
                 A[i, j] = element_l + mu * element_mt
                 B[i, j] = element_m + mu * element_n
@@ -64,8 +64,8 @@ class HelmholtzSolverRAD(HelmholtzSolver):
             for j in range(solution.phis.size):
                 qa, qb = self.geometry.edge_vertices(j)
 
-                element_l = compute_l(solution.k, p, qa, qb, False)
-                element_m = compute_m(solution.k, p, qa, qb, False)
+                element_l = l_rad(solution.k, p, qa, qb, False)
+                element_m = m_rad(solution.k, p, qa, qb, False)
 
                 if orientation == 'interior':
                     sum += element_l * solution.velocities[j] - element_m * solution.phis[j]
