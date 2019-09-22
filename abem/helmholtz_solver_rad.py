@@ -1,11 +1,6 @@
 import numpy as np
 from .helmholtz_solver import HelmholtzSolver
-
-bOptimized = True
-if bOptimized:
-    from .helmholtz_integrals_rad_c import l_rad, m_rad, mt_rad, n_rad
-else:
-    from .helmholtz_integrals_rad import l_rad, m_rad, mt_rad, n_rad
+from .helmholtz_integrals_rad import l_rad, m_rad, mt_rad, n_rad
 
 
 class HelmholtzSolverRAD(HelmholtzSolver):

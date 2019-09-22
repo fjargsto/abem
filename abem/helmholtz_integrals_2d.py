@@ -2,6 +2,9 @@ import numpy as np
 from numpy.linalg import norm
 from scipy.special import hankel1
 from .normals import normal_2d
+from .helmholtz_integrals_2d_c import l_2d_c, m_2d_c, mt_2d_c, n_2d_c
+
+bOptimized = True
 
 
 def complex_quad(func, start, end):
@@ -22,6 +25,9 @@ def complex_quad(func, start, end):
 
 
 def l_2d(k, p, qa, qb, p_on_element):
+    if bOptimized:
+        return l_2d_c(k, p, qa, qb, p_on_element)
+
     qab = qb - qa
     if p_on_element:
         if k == 0.0:                                                                                               
@@ -43,6 +49,8 @@ def l_2d(k, p, qa, qb, p_on_element):
 
 
 def m_2d(k, p, qa, qb, p_on_element):
+    if bOptimized:
+        return m_2d_c(k, p, qa, qb, p_on_element)
     vecq = normal_2d(qa, qb)
     if p_on_element:
         return 0.0                                                                                                 
@@ -61,6 +69,8 @@ def m_2d(k, p, qa, qb, p_on_element):
 
                                                                                                                    
 def mt_2d(k, p, vecp, qa, qb, p_on_element):
+    if bOptimized:
+        return mt_2d_c(k, p, vecp, qa, qb, p_on_element)
     if p_on_element:
         return 0.0                                                                                                 
     else:                                                                                                          
@@ -78,6 +88,8 @@ def mt_2d(k, p, vecp, qa, qb, p_on_element):
 
 
 def n_2d(k, p, vecp, qa, qb, p_on_element):
+    if bOptimized:
+        return n_2d_c(k, p, vecp, qa, qb, p_on_element)
     qab = qb - qa
     if p_on_element:
         ra = norm(p - qa)                                                                                          

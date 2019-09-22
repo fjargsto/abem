@@ -9,7 +9,7 @@ def hankel1(order, x):
     return np.complex64(z.re + z.im*1j)
 
 
-def l_2d(k, p, qa, qb, p_on_element):
+def l_2d_c(k, p, qa, qb, p_on_element):
     result = Complex()                                                           
     p = Float2(p[0], p[1])                                                       
     qa = Float2(qa[0], qa[1])                                                    
@@ -19,7 +19,7 @@ def l_2d(k, p, qa, qb, p_on_element):
     return np.complex64(result.re + result.im*1j)
 
 
-def m_2d(k, p, qa, qb, p_on_element):
+def m_2d_c(k, p, qa, qb, p_on_element):
     result = Complex()                                                           
     p = Float2(p[0], p[1])                                                       
     qa = Float2(qa[0], qa[1])                                                    
@@ -29,7 +29,7 @@ def m_2d(k, p, qa, qb, p_on_element):
     return np.complex64(result.re + result.im*1j)
 
 
-def mt_2d(k, p, normal_p, qa, qb, p_on_element):
+def mt_2d_c(k, p, normal_p, qa, qb, p_on_element):
     result = Complex()                                                           
     p = Float2(p[0], p[1])                                                       
     normal_p = Float2(normal_p[0], normal_p[1])                                  
@@ -40,7 +40,7 @@ def mt_2d(k, p, normal_p, qa, qb, p_on_element):
     return np.complex64(result.re + result.im*1j)
 
 
-def n_2d(k, p, normal_p, qa, qb, p_on_element):
+def n_2d_c(k, p, normal_p, qa, qb, p_on_element):
     result = Complex()                                                           
     p = Float2(p[0], p[1])                                                       
     normal_p = Float2(normal_p[0], normal_p[1])                                  

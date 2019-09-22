@@ -2,6 +2,9 @@ import numpy as np
 from numpy.linalg import norm
 from .helmholtz_integrals_2d import complex_quad
 from .normals import normal_2d
+from .helmholtz_integrals_rad_c import l_rad_c, m_rad_c, mt_rad_c, n_rad_c
+
+bOptimized = False
 
 
 class CircularIntegratorPi(object):
@@ -72,8 +75,10 @@ def complex_quad_cone(func, start, end, segments = 1):
 
 
 def l_rad(k, p, qa, qb, p_on_element):
+    if bOptimized:
+        return l_rad_c(k, p, qa, qb, p_on_element)
     qab = qb - qa
-    # subdived circular integral into sections of
+    # subdivide circular integral into sections of
     # similar size as qab
     q = 0.5 * (qa + qb)
     nSections = 1 + int(q[0] * np.pi / norm(qab))
@@ -149,6 +154,8 @@ def l_rad(k, p, qa, qb, p_on_element):
 
 
 def m_rad(k, p, qa, qb, p_on_element):
+    if bOptimized:
+        return m_rad_c(k, p, qa, qb, p_on_element)
     qab = qb - qa
     vec_q = normal_2d(qa, qb)
 
@@ -201,9 +208,11 @@ def m_rad(k, p, qa, qb, p_on_element):
 
 
 def mt_rad(k, p, vecp, qa, qb, p_on_element):
+    if bOptimized:
+        mt_rad_c(k, p, vecp, qa, qb, p_on_element)
     qab = qb - qa
 
-    # subdived circular integral into sections of
+    # subdivide circular integral into sections of
     # similar size as qab
     q = 0.5 * (qa + qb)
     nSections = 1 + int(q[0] * np.pi / norm(qab))
@@ -251,10 +260,12 @@ def mt_rad(k, p, vecp, qa, qb, p_on_element):
 
 
 def n_rad(k, p, vecp, qa, qb, p_on_element):
+    if bOptimized:
+        return n_rad_c(k, p, vecp, qa, qb, p_on_element)
     qab = qb - qa
     vec_q = normal_2d(qa, qb)
 
-    # subdived circular integral into sections of
+    # subdivide circular integral into sections of
     # similar size as qab
     q = 0.5 * (qa + qb)
     nSections = 1 + int(q[0] * np.pi / norm(qab))

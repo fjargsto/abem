@@ -3,7 +3,7 @@ from ctypes import c_bool, c_float, byref
 import numpy as np
 
 
-def l_3d(k, p, qa, qb, qc, p_on_element):
+def l_3d_c(k, p, qa, qb, qc, p_on_element):
     result = Complex()
     p = Float3(p[0],   p[1],  p[2])                                            
     a = Float3(qa[0], qa[1], qa[2])                                            
@@ -14,7 +14,7 @@ def l_3d(k, p, qa, qb, qc, p_on_element):
     return np.complex64(result.re+result.im*1j)                                
 
 
-def m_3d(k, p, qa, qb, qc, p_on_element):
+def m_3d_c(k, p, qa, qb, qc, p_on_element):
     result = Complex()
     p = Float3(p[0], p[1], p[2])                                               
     a = Float3(qa[0], qa[1], qa[2])                                            
@@ -25,7 +25,7 @@ def m_3d(k, p, qa, qb, qc, p_on_element):
     return np.complex64(result.re+result.im*1j)                                
 
 
-def mt_3d(k, p, vec_p, qa, qb, qc, p_on_element):
+def mt_3d_c(k, p, vec_p, qa, qb, qc, p_on_element):
     result = Complex()
     p = Float3(p[0], p[1], p[2])                                               
     vp = Float3(vec_p[0], vec_p[1], vec_p[2])                                  
@@ -37,7 +37,7 @@ def mt_3d(k, p, vec_p, qa, qb, qc, p_on_element):
     return np.complex64(result.re+result.im*1j)                                
 
 
-def n_3d(k, p, vec_p, qa, qb, qc, p_on_element):
+def n_3d_c(k, p, vec_p, qa, qb, qc, p_on_element):
     result = Complex()
     p = Float3(p[0], p[1], p[2])                                               
     vp = Float3(vec_p[0], vec_p[1], vec_p[2])                                  

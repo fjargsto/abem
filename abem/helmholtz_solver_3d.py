@@ -1,11 +1,6 @@
 import numpy as np
 from .helmholtz_solver import HelmholtzSolver
-
-bOptimized = True
-if bOptimized:
-    from .helmholtz_integrals_3d_c import l_3d, m_3d, mt_3d, n_3d
-else:
-    from .helmholtz_integrals_3d import l_3d, m_3d, mt_3d, n_3d
+from .helmholtz_integrals_3d import l_3d, m_3d, mt_3d, n_3d
 
     
 class HelmholtzSolver3D(HelmholtzSolver):

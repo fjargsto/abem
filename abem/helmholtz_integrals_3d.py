@@ -1,7 +1,9 @@
 import numpy as np
 from numpy.linalg import norm
 from .normals import normal_3d
+from .helmholtz_integrals_3d_c import l_3d_c, m_3d_c, mt_3d_c, n_3d_c
 
+bOptimized = True
 
 def complex_quad(func, a, b, c):
     samples = np.array([[0.333333333333333, 0.333333333333333, 0.225000000000000],
@@ -22,6 +24,8 @@ def complex_quad(func, a, b, c):
 
 
 def l_3d(k, p, qa, qb, qc, p_on_element):
+    if bOptimized:
+        return l_3d_c(k, p, qa, qb, qc, p_on_element)
     if p_on_element:
         if k == 0.0:                                                                                                               
             ab = qb - qa
@@ -75,6 +79,8 @@ def l_3d(k, p, qa, qb, qc, p_on_element):
 
 
 def m_3d(k, p, qa, qb, qc, p_on_element):
+    if bOptimized:
+        return m_3d_c(k, p, qa, qb, qc, p_on_element)
     if p_on_element:
         return 0.0                                                                                                                 
     else:                                                                                                                          
@@ -97,6 +103,8 @@ def m_3d(k, p, qa, qb, qc, p_on_element):
 
                                                                                                                                
 def mt_3d(k, p, vecp, qa, qb, qc, p_on_element):
+    if bOptimized:
+        return mt_3d_c(k, p, vecp, qa, qb, qc, p_on_element)
     if p_on_element:
         return 0.0                                                                                                                 
     else:                                                                                                                          
@@ -118,6 +126,8 @@ def mt_3d(k, p, vecp, qa, qb, qc, p_on_element):
 
                                                                                                                                
 def n_3d(k, p, vecp, qa, qb, qc, p_on_element):
+    if bOptimized:
+        return n_3d_c(k, p, vecp, qa, qb, qc, p_on_element)
     if p_on_element:
         if k == 0.0:                                                                                                               
             ab = qb - qa
