@@ -28,7 +28,9 @@ setup(
     install_requires=requirements(),
     zip_safe=False,
     ext_modules=[intops],
-    test_suite='test',
+    setup_requires=['pytest-runner', ],
+    tests_require=['pytest', ],
+    test_suite='tests',
     data_files=[(
         'notebooks', [
             'notebooks/exterior_helmholtz_solver_2d.ipynb',
