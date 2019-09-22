@@ -41,7 +41,7 @@ class RayleighSolver3D(RayleighSolver):
             p = self.centers[i]
             for j in range(n):
                 qa, qb, qc = self.geometry.triangle_vertices(j)
-                element_l = compute_l(k, p, qa, qb, qc, i == j)
+                element_l = l_3d(k, p, qa, qb, qc, i == j)
                 M[i, j + n] = 2 * element_l
 
         # Fill in the bottom half of the "big matrix".
@@ -59,7 +59,7 @@ class RayleighSolver3D(RayleighSolver):
             sum = 0.0 + 0.0j
             for j in range(solution.phis.size):
                 qa, qb, qc = self.geometry.triangle_vertices(j)
-                element_l = compute_l(solution.k, p, qa, qb, qc, False)
+                element_l = l_3d(solution.k, p, qa, qb, qc, False)
                 sum -= 2.0 * element_l * solution.velocities[j]
             results[i] = sum
         return results

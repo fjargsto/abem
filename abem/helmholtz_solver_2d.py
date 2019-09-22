@@ -1,12 +1,9 @@
 import numpy as np
 from .helmholtz_solver import HelmholtzSolver
 
-bOptimized = True
-if bOptimized:
-    from .helmholtz_integrals_2d_c import compute_l, compute_m, compute_mt, compute_n
-else:
-    from .helmholtz_integrals_2d import compute_l, compute_m, compute_mt, compute_n
-        
+from .helmholtz_integrals_2d import l_2d, m_2d, mt_2d, n_2d
+
+
 class HelmholtzSolver2D(HelmholtzSolver):
     def __init__(self, chain, c=344.0, density=1.205):
         super(HelmholtzSolver2D, self).__init__(chain, c, density)
@@ -27,10 +24,10 @@ class HelmholtzSolver2D(HelmholtzSolver):
             for j in range(self.len()):
                 qa, qb = self.geometry.edge_vertices(j)
 
-                element_l = compute_l(k, center, qa, qb, i == j)
-                element_m = compute_m(k, center, qa, qb, i == j)
-                element_mt = compute_mt(k, center, normal, qa, qb, i == j)
-                element_n = compute_n(k, center, normal, qa, qb, i == j)
+                element_l = l_2d(k, center, qa, qb, i == j)
+                element_m = m_2d(k, center, qa, qb, i == j)
+                element_mt = mt_2d(k, center, normal, qa, qb, i == j)
+                element_n = n_2d(k, center, normal, qa, qb, i == j)
                 
                 A[i, j] = element_l + mu * element_mt
                 B[i, j] = element_m + mu * element_n
@@ -65,8 +62,8 @@ class HelmholtzSolver2D(HelmholtzSolver):
             for j in range(solution.phis.size):
                 qa, qb = self.geometry.edge_vertices(j)
 
-                element_l = compute_l(solution.k, p, qa, qb, False)
-                element_m = compute_m(solution.k, p, qa, qb, False)
+                element_l = l_2d(solution.k, p, qa, qb, False)
+                element_m = m_2d(solution.k, p, qa, qb, False)
                 if orientation == 'interior':
                     sum += element_l * solution.velocities[j] - element_m * solution.phis[j]
                 elif orientation == 'exterior':

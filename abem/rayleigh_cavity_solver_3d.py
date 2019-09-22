@@ -25,8 +25,8 @@ class RayleighCavitySolver3D(RayleighCavitySolver):
             for j in range(m+n):
                 qa, qb, qc = self.geometry.triangle_vertices(j)
 
-                element_m = compute_m(k, p, qa, qb, qc, i == j)
-                element_l = compute_l(k, p, qa, qb, qc, i == j)
+                element_m = m_3d(k, p, qa, qb, qc, i == j)
+                element_l = l_3d(k, p, qa, qb, qc, i == j)
 
                 M[i, j] = -element_m
                 M[i, j + m + n] = element_l
@@ -48,8 +48,8 @@ class RayleighCavitySolver3D(RayleighCavitySolver):
             sum = 0.0
             for j in range(solution.phis.size):
                 qa, qb, qc = self.geometry.triangle_vertices(j)
-                element_l = compute_l(solution.k, p, qa, qb, qc, False)
-                element_m = compute_m(solution.k, p, qa, qb, qc, False)
+                element_l = l_3d(solution.k, p, qa, qb, qc, False)
+                element_m = m_3d(solution.k, p, qa, qb, qc, False)
                 sum += element_l * solution.velocities[j] - element_m * solution.phis[j]
             phis[i] = sum
 
@@ -63,7 +63,7 @@ class RayleighCavitySolver3D(RayleighCavitySolver):
             sum = 0.0
             for j in range(self.open_elements):
                 qa, qb, qc = self.geometry.triangle_vertices(j)
-                element_l = compute_l(solution.k, p, qa, qb, qc, False)
+                element_l = l_3d(solution.k, p, qa, qb, qc, False)
                 sum += -2.0 * element_l * solution.velocities[j]
             phis[i] = sum
 

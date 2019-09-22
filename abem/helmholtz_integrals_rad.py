@@ -2,6 +2,9 @@ import numpy as np
 from numpy.linalg import norm
 from .helmholtz_integrals_2d import complex_quad
 from .normals import normal_2d
+from .helmholtz_integrals_rad_c import l_rad_c, m_rad_c, mt_rad_c, n_rad_c
+
+bOptimized = False
 
 
 class CircularIntegratorPi(object):
@@ -71,9 +74,11 @@ def complex_quad_cone(func, start, end, segments = 1):
     return sum
 
 
-def compute_l(k, p, qa, qb, p_on_element):
+def l_rad(k, p, qa, qb, p_on_element):
+    if bOptimized:
+        return l_rad_c(k, p, qa, qb, p_on_element)
     qab = qb - qa
-    # subdived circular integral into sections of
+    # subdivide circular integral into sections of
     # similar size as qab
     q = 0.5 * (qa + qb)
     nSections = 1 + int(q[0] * np.pi / norm(qab))
@@ -111,7 +116,7 @@ def compute_l(k, p, qa, qb, p_on_element):
 
                 return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
-            return compute_l(0.0, p, qa, qb, True) + complex_quad(generatorFunc, qa, qb)
+            return l_rad(0.0, p, qa, qb, True) + complex_quad(generatorFunc, qa, qb)
 
     else:
         if k == 0.0:
@@ -148,7 +153,9 @@ def compute_l(k, p, qa, qb, p_on_element):
             return complex_quad(generatorFunc, qa, qb)
 
 
-def compute_m(k, p, qa, qb, p_on_element):
+def m_rad(k, p, qa, qb, p_on_element):
+    if bOptimized:
+        return m_rad_c(k, p, qa, qb, p_on_element)
     qab = qb - qa
     vec_q = normal_2d(qa, qb)
 
@@ -200,10 +207,12 @@ def compute_m(k, p, qa, qb, p_on_element):
             return complex_quad(generatorFunc, qa, qb)
 
 
-def compute_mt(k, p, vecp, qa, qb, p_on_element):
+def mt_rad(k, p, vecp, qa, qb, p_on_element):
+    if bOptimized:
+        mt_rad_c(k, p, vecp, qa, qb, p_on_element)
     qab = qb - qa
 
-    # subdived circular integral into sections of
+    # subdivide circular integral into sections of
     # similar size as qab
     q = 0.5 * (qa + qb)
     nSections = 1 + int(q[0] * np.pi / norm(qab))
@@ -250,11 +259,13 @@ def compute_mt(k, p, vecp, qa, qb, p_on_element):
             return complex_quad(generatorFunc, qa, qb)
 
 
-def compute_n(k, p, vecp, qa, qb, p_on_element):
+def n_rad(k, p, vecp, qa, qb, p_on_element):
+    if bOptimized:
+        return n_rad_c(k, p, vecp, qa, qb, p_on_element)
     qab = qb - qa
     vec_q = normal_2d(qa, qb)
 
-    # subdived circular integral into sections of
+    # subdivide circular integral into sections of
     # similar size as qab
     q = 0.5 * (qa + qb)
     nSections = 1 + int(q[0] * np.pi / norm(qab))
@@ -328,9 +339,9 @@ def compute_n(k, p, vecp, qa, qb, p_on_element):
 
                 return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
-            return compute_n(0.0, p, vecp, qa, qb, True) \
-                - k ** 2 * compute_l(0.0, p, qa, qb, True) / 2.0 \
-                + complex_quad(generatorFunc, qa, p) + complex_quad(generatorFunc, p, qb)
+            return n_rad(0.0, p, vecp, qa, qb, True) \
+                   - k ** 2 * l_rad(0.0, p, qa, qb, True) / 2.0 \
+                   + complex_quad(generatorFunc, qa, p) + complex_quad(generatorFunc, p, qb)
 
     else:
         if k == 0.0:
