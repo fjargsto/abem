@@ -12,4 +12,4 @@ install:
   - export LD_LIBRARY_PATH=$(pwd):$LD_LIBRARY_PATH
 
 script:
-  - python setup.py test
+  - python setup.py pytest
