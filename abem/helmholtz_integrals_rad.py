@@ -1,10 +1,8 @@
 import numpy as np
 from numpy.linalg import norm
 from .helmholtz_integrals_2d import complex_quad
-from .normals import normal_2d
 from .helmholtz_integrals_rad_c import l_rad_c, m_rad_c, mt_rad_c, n_rad_c
-
-bOptimized = False
+from .normals import normal_2d
 
 
 class CircularIntegratorPi(object):
@@ -74,11 +72,14 @@ def complex_quad_cone(func, start, end, segments = 1):
     return sum
 
 
+bOptimized = True
+
+
 def l_rad(k, p, qa, qb, p_on_element):
     if bOptimized:
         return l_rad_c(k, p, qa, qb, p_on_element)
     qab = qb - qa
-    # subdivide circular integral into sections of
+    # subdived circular integral into sections of
     # similar size as qab
     q = 0.5 * (qa + qb)
     nSections = 1 + int(q[0] * np.pi / norm(qab))
@@ -209,10 +210,10 @@ def m_rad(k, p, qa, qb, p_on_element):
 
 def mt_rad(k, p, vecp, qa, qb, p_on_element):
     if bOptimized:
-        mt_rad_c(k, p, vecp, qa, qb, p_on_element)
+        return mt_rad_c(k, p, vecp, qa, qb, p_on_element)
     qab = qb - qa
 
-    # subdivide circular integral into sections of
+    # subdived circular integral into sections of
     # similar size as qab
     q = 0.5 * (qa + qb)
     nSections = 1 + int(q[0] * np.pi / norm(qab))
@@ -265,7 +266,7 @@ def n_rad(k, p, vecp, qa, qb, p_on_element):
     qab = qb - qa
     vec_q = normal_2d(qa, qb)
 
-    # subdivide circular integral into sections of
+    # subdived circular integral into sections of
     # similar size as qab
     q = 0.5 * (qa + qb)
     nSections = 1 + int(q[0] * np.pi / norm(qab))
@@ -340,8 +341,8 @@ def n_rad(k, p, vecp, qa, qb, p_on_element):
                 return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
             return n_rad(0.0, p, vecp, qa, qb, True) \
-                   - k ** 2 * l_rad(0.0, p, qa, qb, True) / 2.0 \
-                   + complex_quad(generatorFunc, qa, p) + complex_quad(generatorFunc, p, qb)
+                - k ** 2 * l_rad(0.0, p, qa, qb, True) / 2.0 \
+                + complex_quad(generatorFunc, qa, p) + complex_quad(generatorFunc, p, qb)
 
     else:
         if k == 0.0:
