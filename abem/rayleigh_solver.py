@@ -1,11 +1,7 @@
 from .solver import Solver
 from .boundary_solutions import RayleighBoundarySolution
-
-bOptimized = True
-if bOptimized:
-    from .helmholtz_integrals_3d_c import *
-else:
-    from .helmholtz_integrals_3d import *
+from .helmholtz_integrals_3d import l_3d
+import numpy as np
 
 
 class RayleighSolver(Solver):
@@ -14,7 +10,7 @@ class RayleighSolver(Solver):
         assert boundary_condition.f.size == self.len()
         M = self.compute_boundary_matrix(k, boundary_condition.alpha, boundary_condition.beta)
         n = self.len()
-        b = np.zeros(2 * n, dtype=complex)
+        b = np.zeros(2 * n, dtype=np.complex)
         b[n: 2*n] = boundary_condition.f
         x = np.linalg.solve(M, b)
         
