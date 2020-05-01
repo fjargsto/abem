@@ -2,14 +2,15 @@ import unittest
 import numpy as np
 from scipy.special import hankel1
 
-from abem import helmholtz_integrals_2d as IH2
-from abem import helmholtz_integrals_2d_c as IH2C
-from abem import helmholtz_integrals_3d as IH3
-from abem import helmholtz_integrals_rad as RAD
+from abem.helmholtz_integrals_2d import l_2d_p, m_2d_p, mt_2d_p, n_2d_p
+from abem.helmholtz_integrals_2d_c import hankel1_c, l_2d_c, m_2d_c, mt_2d_c, n_2d_c
+from abem.helmholtz_integrals_3d import l_3d_p, m_3d_p, mt_3d_p, n_3d_p, complex_quad
+from abem.helmholtz_integrals_3d_c import l_3d_c, m_3d_c, mt_3d_c, n_3d_c
+from abem.helmholtz_integrals_rad import l_rad_p, m_rad_p, mt_rad_p, n_rad_p, complex_quad_generator, CircularIntegratorPi
+from abem.helmholtz_integrals_rad_c import l_rad_c, m_rad_c, mt_rad_c, n_rad_c
 
 
 class TestComplexQuadGenerator(unittest.TestCase):
-
     def test_complex_quad_generator_01(self):
         a = np.array([0.0, 0.0], dtype=np.float32)
         b = np.array([1.0, 1.0], dtype=np.float32)
@@ -17,14 +18,15 @@ class TestComplexQuadGenerator(unittest.TestCase):
         def func(x):
             return 1.0
 
-        result = RAD.complex_quad_generator(func, a, b)
-        self.assertAlmostEqual(result, np.sqrt(2.0), 6, msg="{} != {}".format(result, np.sqrt(2.0)))
+        result = complex_quad_generator(func, a, b)
+        self.assertAlmostEqual(
+            result, np.sqrt(2.0), 6, msg="{} != {}".format(result, np.sqrt(2.0))
+        )
 
 
 class TestCircularIntegratorPI(unittest.TestCase):
-
     def test_circular_integrator_01(self):
-        circle = RAD.CircularIntegratorPi(1)
+        circle = CircularIntegratorPi(1)
 
         def func(x):
             return 1.0
@@ -33,7 +35,7 @@ class TestCircularIntegratorPI(unittest.TestCase):
         self.assertAlmostEqual(result, np.pi, msg="{} != {}".format(result, np.pi))
 
     def test_circular_integrator_02(self):
-        circle = RAD.CircularIntegratorPi(2)
+        circle = CircularIntegratorPi(2)
 
         def func(x):
             return 1.0
@@ -43,53 +45,52 @@ class TestCircularIntegratorPI(unittest.TestCase):
 
 
 class TestTriangleIntegrator(unittest.TestCase):
-
     def test_complex_quad(self):
-
         def func(x):
             return 1.0
 
         a = np.array([0, 0, 0], dtype=np.float32)
         b = np.array([0, 1, 0], dtype=np.float32)
         c = np.array([0, 0, 1], dtype=np.float32)
-        result = IH3.complex_quad(func, a, b, c)
+        result = complex_quad(func, a, b, c)
         self.assertAlmostEqual(result, 0.5, msg="{} != {}".format(result, 0.5))
 
 
 class TestHankel(unittest.TestCase):
-
     def test_hankel_01(self):
         H1scipy = hankel1(0, 1.0)
-        H1gsl = IH2C.hankel1(0, 1.0)
+        H1gsl = hankel1_c(0, 1.0)
         self.assertAlmostEqual(H1scipy, H1gsl, msg="{} != {}".format(H1scipy, H1gsl))
 
     def test_hankel_02(self):
         H1scipy = hankel1(0, 10.0)
-        H1gsl = IH2C.hankel1(0, 10.0)
+        H1gsl = hankel1_c(0, 10.0)
         self.assertAlmostEqual(H1scipy, H1gsl, msg="{} != {}".format(H1scipy, H1gsl))
 
     def test_hankel_03(self):
         H1scipy = hankel1(1, 1.0)
-        H1gsl = IH2C.hankel1(1, 1.0)
+        H1gsl = hankel1_c(1, 1.0)
         self.assertAlmostEqual(H1scipy, H1gsl, msg="{} != {}".format(H1scipy, H1gsl))
 
     def test_hankel_04(self):
         H1scipy = hankel1(1, 10.0)
-        H1gsl = IH2C.hankel1(1, 10.0)
+        H1gsl = hankel1_c(1, 10.0)
         self.assertAlmostEqual(H1scipy, H1gsl, msg="{} != {}".format(H1scipy, H1gsl))
 
 
-class TestComputeL(unittest.TestCase):
-
+# -----------------------------------------------------------------------------
+# 2D Integral Operators
+# -----------------------------------------------------------------------------
+class TestComputeL_2D(unittest.TestCase):
     def test_compute_L_01(self):
         k = 0.0
         p = np.array([0.5, 0.75], dtype=np.float32)
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = False
-        zPy = IH2.l_2d(k, p, a, b, pOnElement)
-        zC = IH2C.l_2d_c(k, p, a, b, pOnElement)
-        self.assertAlmostEqual(zPy, zC, msg="{} != {}".format(zPy, zC))
+        zP = l_2d_p(k, p, a, b, pOnElement)
+        zC = l_2d_c(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC)
 
     def test_compute_L_02(self):
         k = 10.0
@@ -97,9 +98,9 @@ class TestComputeL(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = False
-        zPy = IH2.l_2d(k, p, a, b, pOnElement)
-        zC = IH2C.l_2d_c(k, p, a, b, pOnElement)
-        self.assertAlmostEqual(zPy, zC, msg="{} != {}".format(zPy, zC))
+        zP = l_2d_p(k, p, a, b, pOnElement)
+        zC = l_2d_c(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC)
 
     def test_compute_L_03(self):
         k = 0.0
@@ -107,9 +108,9 @@ class TestComputeL(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
-        zPy = IH2.l_2d(k, p, a, b, pOnElement)
-        zC = IH2C.l_2d_c(k, p, a, b, pOnElement)
-        self.assertAlmostEqual(zPy, zC, msg="{} != {}".format(zPy, zC))
+        zP = l_2d_p(k, p, a, b, pOnElement)
+        zC = l_2d_c(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC)
 
     def test_compute_L_04(self):
         k = 10.0
@@ -117,22 +118,21 @@ class TestComputeL(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
-        zPy = IH2.l_2d(k, p, a, b, pOnElement)
-        zC = IH2C.l_2d_c(k, p, a, b, pOnElement)
-        self.assertAlmostEqual(zPy, zC, msg="{} != {}".format(zPy, zC))
+        zP = l_2d_p(k, p, a, b, pOnElement)
+        zC = l_2d_c(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC)
 
 
-class TestComputeM(unittest.TestCase):
-
+class TestComputeM_2D(unittest.TestCase):
     def test_compute_M_01(self):
         k = 0.0
         p = np.array([0.5, 0.75], dtype=np.float32)
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = False
-        zPy = IH2.m_2d(k, p, a, b, pOnElement)
-        zC = IH2C.m_2d_c(k, p, a, b, pOnElement)
-        self.assertAlmostEqual(zPy, zC, msg="{} != {}".format(zPy, zC))
+        zP = m_2d_p(k, p, a, b, pOnElement)
+        zC = m_2d_c(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC)
 
     def test_compute_M_02(self):
         k = 10.0
@@ -140,9 +140,9 @@ class TestComputeM(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = False
-        zPy = IH2.m_2d(k, p, a, b, pOnElement)
-        zC = IH2C.m_2d_c(k, p, a, b, pOnElement)
-        self.assertAlmostEqual(zPy, zC, msg="{} != {}".format(zPy, zC))
+        zP = m_2d_p(k, p, a, b, pOnElement)
+        zC = m_2d_c(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC)
 
     def test_compute_M_03(self):
         k = 0.0
@@ -150,9 +150,9 @@ class TestComputeM(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
-        zPy = IH2.m_2d(k, p, a, b, pOnElement)
-        zC = IH2C.m_2d_c(k, p, a, b, pOnElement)
-        self.assertAlmostEqual(zPy, zC, msg="{} != {}".format(zPy, zC))
+        zP = m_2d_p(k, p, a, b, pOnElement)
+        zC = m_2d_c(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC)
 
     def test_compute_M_04(self):
         k = 10.0
@@ -160,13 +160,12 @@ class TestComputeM(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
-        zPy = IH2.m_2d(k, p, a, b, pOnElement)
-        zC = IH2C.m_2d_c(k, p, a, b, pOnElement)
-        self.assertAlmostEqual(zPy, zC, msg="{} != {}".format(zPy, zC))
+        zP = m_2d_p(k, p, a, b, pOnElement)
+        zC = m_2d_c(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC)
 
 
-class TestComputeMt(unittest.TestCase):
-
+class TestComputeMt_2D(unittest.TestCase):
     def test_compute_Mt_01(self):
         k = 0.0
         p = np.array([0.5, 0.75], dtype=np.float32)
@@ -174,9 +173,9 @@ class TestComputeMt(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = False
-        zPy = IH2.mt_2d(k, p, normal_p, a, b, pOnElement)
-        zC = IH2C.mt_2d_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zPy, zC, msg="{} != {}".format(zPy, zC))
+        zP = mt_2d_p(k, p, normal_p, a, b, pOnElement)
+        zC = mt_2d_c(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
 
     def test_compute_Mt_02(self):
         k = 10.0
@@ -185,9 +184,9 @@ class TestComputeMt(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = False
-        zPy = IH2.mt_2d(k, p, normal_p, a, b, pOnElement)
-        zC = IH2C.mt_2d_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zPy, zC, msg="{} != {}".format(zPy, zC))
+        zP = mt_2d_p(k, p, normal_p, a, b, pOnElement)
+        zC = mt_2d_c(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
 
     def test_compute_Mt_03(self):
         k = 0.0
@@ -196,9 +195,9 @@ class TestComputeMt(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
-        zPy = IH2.mt_2d(k, p, normal_p, a, b, pOnElement)
-        zC = IH2C.mt_2d_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zPy, zC, msg="{} != {}".format(zPy, zC))
+        zP = mt_2d_p(k, p, normal_p, a, b, pOnElement)
+        zC = mt_2d_c(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
 
     def test_compute_Mt_04(self):
         k = 10.0
@@ -207,13 +206,12 @@ class TestComputeMt(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
-        zPy = IH2.mt_2d(k, p, normal_p, a, b, pOnElement)
-        zC = IH2C.mt_2d_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zPy, zC, msg="{} != {}".format(zPy, zC))
+        zP = mt_2d_p(k, p, normal_p, a, b, pOnElement)
+        zC = mt_2d_c(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
 
 
-class TestComputeN(unittest.TestCase):
-
+class TestComputeN_2D(unittest.TestCase):
     def test_compute_N_01(self):
         k = 0.0
         p = np.array([0.5, 0.75], dtype=np.float32)
@@ -221,9 +219,9 @@ class TestComputeN(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = False
-        zPy = IH2.n_2d(k, p, normal_p, a, b, pOnElement)
-        zC = IH2C.n_2d_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zPy, zC, msg="{} != {}".format(zPy, zC))
+        zP = n_2d_p(k, p, normal_p, a, b, pOnElement)
+        zC = n_2d_c(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
 
     def test_compute_N_02(self):
         k = 10.0
@@ -232,9 +230,9 @@ class TestComputeN(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = False
-        zPy = IH2.n_2d(k, p, normal_p, a, b, pOnElement)
-        zC = IH2C.n_2d_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zPy, zC, 6, msg="{} != {}".format(zPy, zC))
+        zP = n_2d_p(k, p, normal_p, a, b, pOnElement)
+        zC = n_2d_c(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
 
     def test_compute_N_03(self):
         k = 0.0
@@ -243,9 +241,9 @@ class TestComputeN(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
-        zPy = IH2.n_2d(k, p, normal_p, a, b, pOnElement)
-        zC = IH2C.n_2d_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zPy, zC, msg="{} != {}".format(zPy, zC))
+        zP = n_2d_p(k, p, normal_p, a, b, pOnElement)
+        zC = n_2d_c(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
 
     def test_compute_N_04(self):
         k = 10.0
@@ -254,14 +252,385 @@ class TestComputeN(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
-        zPy = IH2.n_2d(k, p, normal_p, a, b, pOnElement)
-        zC = IH2C.n_2d_c(k, p, normal_p, a, b, pOnElement)
-        # note, how accuracy here is reduced to only 3 digits after the decimal dot.
-        # I don't believe this is because of buggy code but because of error accumulation
-        # being different for the C and the Python codes.
-        self.assertAlmostEqual(zPy, zC, 3, msg="{} != {}".format(zPy, zC))
+        zP = n_2d_p(k, p, normal_p, a, b, pOnElement)
+        zC = n_2d_c(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
 
 
-if __name__ == '__main__':
+# -----------------------------------------------------------------------------
+# 3D Integral Operators
+# -----------------------------------------------------------------------------
+class TestComputeL_3D(unittest.TestCase):
+    def test_compute_L_01(self):
+        k = 0.0
+        p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
+        a = np.array([0.0, 0.00, 0.0], dtype=np.float32)
+        b = np.array([0.0, 0.10, 0.0], dtype=np.float32)
+        c = np.array([0.0, 0.00, 0.1], dtype=np.float32)
+        pOnElement = False
+        zP = l_3d_p(k, p, a, b, c, pOnElement)
+        zC = l_3d_c(k, p, a, b, c, pOnElement)
+        self.assertAlmostEqual(zP, zC)
+
+    def test_compute_L_02(self):
+        k = 10.0
+        p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
+        a = np.array([0.0, 0.00, 0.0], dtype=np.float32)
+        b = np.array([0.0, 0.10, 0.0], dtype=np.float32)
+        c = np.array([0.0, 0.00, 0.1], dtype=np.float32)
+        pOnElement = False
+        zP = l_3d_p(k, p, a, b, c, pOnElement)
+        zC = l_3d_c(k, p, a, b, c, pOnElement)
+        self.assertAlmostEqual(zP, zC)
+
+    def test_compute_L_03(self):
+        k = 0.0
+        p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
+        a = np.array([0.0, 0.00, 0.0], dtype=np.float32)
+        b = np.array([0.0, 0.10, 0.0], dtype=np.float32)
+        c = np.array([0.0, 0.00, 0.1], dtype=np.float32)
+        pOnElement = True
+        zP = l_3d_p(k, p, a, b, c, pOnElement)
+        zC = l_3d_c(k, p, a, b, c, pOnElement)
+        self.assertAlmostEqual(zP, zC)
+
+    def test_compute_L_04(self):
+        k = 10.0
+        p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
+        a = np.array([0.0, 0.00, 0.0], dtype=np.float32)
+        b = np.array([0.0, 0.10, 0.0], dtype=np.float32)
+        c = np.array([0.0, 0.00, 0.1], dtype=np.float32)
+        pOnElement = True
+        zP = l_3d_p(k, p, a, b, c, pOnElement)
+        zC = l_3d_c(k, p, a, b, c, pOnElement)
+        self.assertAlmostEqual(zP, zC)
+
+
+class TestComputeM_3D(unittest.TestCase):
+    def test_compute_M_01(self):
+        k = 0.0
+        p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
+        a = np.array([0.0, 0.00, 0.0], dtype=np.float32)
+        b = np.array([0.0, 0.10, 0.0], dtype=np.float32)
+        c = np.array([0.0, 0.00, 0.1], dtype=np.float32)
+        pOnElement = False
+        zP = m_3d_p(k, p, a, b, c, pOnElement)
+        zC = m_3d_c(k, p, a, b, c, pOnElement)
+        self.assertAlmostEqual(zP, zC)
+
+    def test_compute_M_02(self):
+        k = 10.0
+        p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
+        a = np.array([0.0, 0.00, 0.0], dtype=np.float32)
+        b = np.array([0.0, 0.10, 0.0], dtype=np.float32)
+        c = np.array([0.0, 0.00, 0.1], dtype=np.float32)
+        pOnElement = False
+        zP = m_3d_p(k, p, a, b, c, pOnElement)
+        zC = m_3d_c(k, p, a, b, c, pOnElement)
+        self.assertAlmostEqual(zP, zC)
+
+    def test_compute_M_03(self):
+        k = 0.0
+        p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
+        a = np.array([0.0, 0.00, 0.0], dtype=np.float32)
+        b = np.array([0.0, 0.10, 0.0], dtype=np.float32)
+        c = np.array([0.0, 0.00, 0.1], dtype=np.float32)
+        pOnElement = True
+        zP = m_3d_p(k, p, a, b, c, pOnElement)
+        zC = m_3d_c(k, p, a, b, c, pOnElement)
+        self.assertAlmostEqual(zP, zC)
+
+    def test_compute_M_04(self):
+        k = 10.0
+        p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
+        a = np.array([0.0, 0.00, 0.0], dtype=np.float32)
+        b = np.array([0.0, 0.10, 0.0], dtype=np.float32)
+        c = np.array([0.0, 0.00, 0.1], dtype=np.float32)
+        pOnElement = True
+        zP = m_3d_p(k, p, a, b, c, pOnElement)
+        zC = m_3d_c(k, p, a, b, c, pOnElement)
+        self.assertAlmostEqual(zP, zC)
+
+
+class TestComputeMt_3D(unittest.TestCase):
+    def test_compute_Mt_01(self):
+        k = 0.0
+        p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0])
+        a = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+        b = np.array([0.1, 0.0, 0.0], dtype=np.float32)
+        c = np.array([0.0, 0.1, 0.0], dtype=np.float32)
+        pOnElement = False
+        zP = mt_3d_p(k, p, normal_p, a, b, c, pOnElement)
+        zC = mt_3d_c(k, p, normal_p, a, b, c, pOnElement)
+        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+
+    def test_compute_Mt_02(self):
+        k = 10.0
+        p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0])
+        a = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+        b = np.array([0.1, 0.0, 0.0], dtype=np.float32)
+        c = np.array([0.0, 0.1, 0.0], dtype=np.float32)
+        pOnElement = False
+        zP = mt_3d_p(k, p, normal_p, a, b, c, pOnElement)
+        zC = mt_3d_c(k, p, normal_p, a, b, c, pOnElement)
+        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+
+    def test_compute_Mt_03(self):
+        k = 0.0
+        p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0])
+        a = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+        b = np.array([0.1, 0.0, 0.0], dtype=np.float32)
+        c = np.array([0.0, 0.1, 0.0], dtype=np.float32)
+        pOnElement = True
+        zP = mt_3d_p(k, p, normal_p, a, b, c, pOnElement)
+        zC = mt_3d_c(k, p, normal_p, a, b, c, pOnElement)
+        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+
+    def test_compute_Mt_04(self):
+        k = 10.0
+        p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0])
+        a = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+        b = np.array([0.1, 0.0, 0.0], dtype=np.float32)
+        c = np.array([0.0, 0.1, 0.0], dtype=np.float32)
+        pOnElement = True
+        zP = mt_3d_p(k, p, normal_p, a, b, c, pOnElement)
+        zC = mt_3d_c(k, p, normal_p, a, b, c, pOnElement)
+        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+
+
+class TestComputeN_3D(unittest.TestCase):
+    def test_compute_N_01(self):
+        k = 0.0
+        p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0])
+        a = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+        b = np.array([0.1, 0.0, 0.0], dtype=np.float32)
+        c = np.array([0.0, 0.1, 0.0], dtype=np.float32)
+        pOnElement = False
+        zP = n_3d_p(k, p, normal_p, a, b, c, pOnElement)
+        zC = n_3d_c(k, p, normal_p, a, b, c, pOnElement)
+        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+
+    def test_compute_N_02(self):
+        k = 10.0
+        p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0])
+        a = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+        b = np.array([0.1, 0.0, 0.0], dtype=np.float32)
+        c = np.array([0.0, 0.1, 0.0], dtype=np.float32)
+        pOnElement = False
+        zP = n_3d_p(k, p, normal_p, a, b, c, pOnElement)
+        zC = n_3d_c(k, p, normal_p, a, b, c, pOnElement)
+        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+
+    def test_compute_N_03(self):
+        k = 0.0
+        p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0])
+        a = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+        b = np.array([0.1, 0.0, 0.0], dtype=np.float32)
+        c = np.array([0.0, 0.1, 0.0], dtype=np.float32)
+        pOnElement = True
+        zP = n_3d_p(k, p, normal_p, a, b, c, pOnElement)
+        zC = n_3d_c(k, p, normal_p, a, b, c, pOnElement)
+        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+
+    def test_compute_N_04(self):
+        k = 10.0
+        p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0])
+        a = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+        b = np.array([0.1, 0.0, 0.0], dtype=np.float32)
+        c = np.array([0.0, 0.1, 0.0], dtype=np.float32)
+        pOnElement = True
+        zP = n_3d_p(k, p, normal_p, a, b, c, pOnElement)
+        zC = n_3d_c(k, p, normal_p, a, b, c, pOnElement)
+        self.assertAlmostEqual(zP, zC, 6, msg="{} != {}".format(zP, zC))
+
+
+# -----------------------------------------------------------------------------
+# Radial (RAD) Integral Operators
+# -----------------------------------------------------------------------------
+class TestComputeL_RAD(unittest.TestCase):
+    def test_compute_L_01(self):
+        k = 0.0
+        p = np.array([0.3, 0.3], dtype=np.float32)
+        a = np.array([0.5, 1.0], dtype=np.float32)
+        b = np.array([1.0, 0.3], dtype=np.float32)
+        pOnElement = False
+        zP = l_rad_p(k, p, a, b, pOnElement)
+        zC = l_rad_c(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC)
+
+    def test_compute_L_02(self):
+        k = 10.0
+        p = np.array([0.3, 0.3], dtype=np.float32)
+        a = np.array([0.5, 1.0], dtype=np.float32)
+        b = np.array([1.0, 0.3], dtype=np.float32)
+        pOnElement = False
+        zP = l_rad_p(k, p, a, b, pOnElement)
+        zC = l_rad_c(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC)
+
+    def test_compute_L_03(self):
+        k = 0.0
+        p = np.array([0.75, 0.75], dtype=np.float32)
+        a = np.array([0.5, 1.0], dtype=np.float32)
+        b = np.array([1.0, 0.5], dtype=np.float32)
+        pOnElement = True
+        zP = l_rad_p(k, p, a, b, pOnElement)
+        zC = l_rad_c(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC)
+
+    def test_compute_L_04(self):
+        k = 10.0
+        p = np.array([0.75, 0.75], dtype=np.float32)
+        a = np.array([0.5, 1.0], dtype=np.float32)
+        b = np.array([1.0, 0.5], dtype=np.float32)
+        pOnElement = True
+        zP = l_rad_p(k, p, a, b, pOnElement)
+        zC = l_rad_c(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC
+                               )
+
+
+class TestComputeM_RAD(unittest.TestCase):
+    def test_compute_M_01(self):
+        k = 0.0
+        p = np.array([0.3, 0.3], dtype=np.float32)
+        a = np.array([0.5, 1.0], dtype=np.float32)
+        b = np.array([1.0, 0.3], dtype=np.float32)
+        pOnElement = False
+        zP = m_rad_p(k, p, a, b, pOnElement)
+        zC = m_rad_c(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC)
+
+    def test_compute_M_02(self):
+        k = 10.0
+        p = np.array([0.3, 0.3], dtype=np.float32)
+        a = np.array([0.5, 1.0], dtype=np.float32)
+        b = np.array([1.0, 0.3], dtype=np.float32)
+        pOnElement = False
+        zP = m_rad_p(k, p, a, b, pOnElement)
+        zC = m_rad_c(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC)
+
+    def test_compute_M_03(self):
+        k = 0.0
+        p = np.array([0.75, 0.75], dtype=np.float32)
+        a = np.array([0.5, 1.0], dtype=np.float32)
+        b = np.array([1.0, 0.5], dtype=np.float32)
+        pOnElement = True
+        zP = m_rad_p(k, p, a, b, pOnElement)
+        zC = m_rad_c(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC)
+
+    def test_compute_M_04(self):
+        k = 10.0
+        p = np.array([0.75, 0.75], dtype=np.float32)
+        a = np.array([0.5, 1.0], dtype=np.float32)
+        b = np.array([1.0, 0.5], dtype=np.float32)
+        pOnElement = True
+        zP = m_rad_p(k, p, a, b, pOnElement)
+        zC = m_rad_c(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC, 6)
+
+
+class TestComputeMt_RAD(unittest.TestCase):
+    def test_compute_Mt_01(self):
+        k = 0.0
+        p = np.array([0.3, 0.3], dtype=np.float32)
+        a = np.array([0.5, 1.0], dtype=np.float32)
+        b = np.array([1.0, 0.3], dtype=np.float32)
+        normal_p = np.array([np.sqrt(0.5), np.sqrt(0.5)])
+        pOnElement = False
+        zP = mt_rad_p(k, p, normal_p, a, b, pOnElement)
+        zC = mt_rad_c(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC)
+
+    def test_compute_Mt_02(self):
+        k = 10.0
+        p = np.array([0.3, 0.3], dtype=np.float32)
+        a = np.array([0.5, 1.0], dtype=np.float32)
+        b = np.array([1.0, 0.3], dtype=np.float32)
+        normal_p = np.array([np.sqrt(0.5), np.sqrt(0.5)])
+        pOnElement = False
+        zP = mt_rad_p(k, p, normal_p, a, b, pOnElement)
+        zC = mt_rad_c(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC, 6)
+
+    def test_compute_Mt_03(self):
+        k = 0.0
+        p = np.array([0.75, 0.75], dtype=np.float32)
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)])
+        a = np.array([0.5, 1.0], dtype=np.float32)
+        b = np.array([1.0, 0.5], dtype=np.float32)
+        pOnElement = True
+        zP = mt_rad_p(k, p, normal_p, a, b, pOnElement)
+        zC = mt_rad_c(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC)
+
+    def test_compute_Mt_04(self):
+        k = 10.0
+        p = np.array([0.75, 0.75], dtype=np.float32)
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)])
+        a = np.array([0.5, 1.0], dtype=np.float32)
+        b = np.array([1.0, 0.5], dtype=np.float32)
+        pOnElement = True
+        zP = mt_rad_p(k, p, normal_p, a, b, pOnElement)
+        zC = mt_rad_c(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC)
+
+
+class TestComputeN_RAD(unittest.TestCase):
+    def test_compute_N_01(self):
+        k = 0.0
+        p = np.array([0.3, 0.3], dtype=np.float32)
+        a = np.array([0.5, 1.0], dtype=np.float32)
+        b = np.array([1.0, 0.3], dtype=np.float32)
+        normal_p = np.array([np.sqrt(0.5), np.sqrt(0.5)])
+        pOnElement = False
+        zP = n_rad_p(k, p, normal_p, a, b, pOnElement)
+        zC = n_rad_c(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC)
+
+    def test_compute_N_02(self):
+        k = 10.0
+        p = np.array([0.3, 0.3], dtype=np.float32)
+        a = np.array([0.5, 1.0], dtype=np.float32)
+        b = np.array([1.0, 0.3], dtype=np.float32)
+        normal_p = np.array([np.sqrt(0.5), np.sqrt(0.5)])
+        pOnElement = False
+        zP = n_rad_p(k, p, normal_p, a, b, pOnElement)
+        zC = n_rad_c(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC, 6)
+
+    def test_compute_N_03(self):
+        k = 0.0
+        p = np.array([0.75, 0.75], dtype=np.float32)
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)])
+        a = np.array([0.5, 1.0], dtype=np.float32)
+        b = np.array([1.0, 0.5], dtype=np.float32)
+        pOnElement = True
+        zP = n_rad_p(k, p, normal_p, a, b, pOnElement)
+        zC = n_rad_c(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC, 6)
+
+    def test_compute_N_04(self):
+        k = 10.0
+        p = np.array([0.75, 0.75], dtype=np.float32)
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)])
+        a = np.array([0.5, 1.0], dtype=np.float32)
+        b = np.array([1.0, 0.5], dtype=np.float32)
+        pOnElement = True
+        zP = n_rad_p(k, p, normal_p, a, b, pOnElement)
+        zC = n_rad_c(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zC, 5)
+
+
+if __name__ == "__main__":
     unittest.main()
-

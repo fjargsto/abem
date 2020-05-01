@@ -276,6 +276,18 @@ complex float complexQuad2D(complex float(*integrand)(Float2, void*), void * sta
   return norm2f(vec) * sum;
 }
 
+complex float complexQuadGenerator(complex float(*integrand)(Float2, void*), void * state, IntRule1D intRule,
+				   Float2 start, Float2 end) {
+  Float2 vec;
+  vec = sub2f(end, start);
+  complex float sum = 0.0f;
+  for (int i = 0; i < intRule.nSamples; ++i) {
+    float x_sqr = intRule.pX[i] * intRule.pX[i];
+    sum += intRule.pW[i] * integrand(add2f(smul2f(x_sqr, vec), start), state) * intRule.pX[i];
+  }
+  return norm2f(vec) * sum * 2.0f;
+}
+
 complex float complexQuad3D(complex float(*integrand)(Float3, void*), void * state, IntRule2D intRule,
 			    Float3 a, Float3 b, Float3 c) {
   Float3 vec_b = sub3f(b, a);
@@ -663,8 +675,8 @@ complex float computeL_RAD(float k, Float2 p, Float2 a, Float2 b, bool pOnElemen
     state.semiCircleRule = semiCircleRule;
 
     if (k == 0.0f) {
-      return complexQuad2D(integrateGeneratorL0_RAD, &state, intRule, p, a)
-	+ complexQuad2D(integrateGeneratorL0_RAD, &state, intRule, p, b);
+      return complexQuadGenerator(integrateGeneratorL0_RAD, &state, intRule, p, a)
+	+ complexQuadGenerator(integrateGeneratorL0_RAD, &state, intRule, p, b);
     } else {
       return computeL_RAD(0.0f, p, a, b, true)
 	+ complexQuad2D(integrateGeneratorL0pOn_RAD, &state, intRule, a, b);

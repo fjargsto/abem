@@ -27,7 +27,7 @@ class CircularIntegratorPi(object):
 
         factor = np.pi / self.segments
         for i in range(nSamples):
-            arcAbscissa = i / self.samples.shape[0] + self.samples[i % self.samples.shape[0], 0]
+            arcAbscissa = i // self.samples.shape[0] + self.samples[i % self.samples.shape[0], 0]
             arcAbscissa *= factor
             self.rotationFactors[i, :] = np.cos(arcAbscissa), np.sin(arcAbscissa)
 
@@ -75,17 +75,13 @@ def complex_quad_cone(func, start, end, segments = 1):
 bOptimized = True
 
 
-def l_rad(k, p, qa, qb, p_on_element):
-    if bOptimized:
-        return l_rad_c(k, p, qa, qb, p_on_element)
-    qab = qb - qa
-    # subdived circular integral into sections of
-    # similar size as qab
+def l_rad_p(k, p, qa, qb, p_on_element):
+    ab = qb - qa
+    # subdivide circular integral into sections of
+    # similar size as ab
     q = 0.5 * (qa + qb)
-    nSections = 1 + int(q[0] * np.pi / norm(qab))
+    nSections = 1 + int(q[0] * np.pi / norm(ab))
     if p_on_element:
-        ap = p - qa
-
         if k == 0.0:
             def generatorFunc(x):
                 circle = CircularIntegratorPi(2 * nSections)
@@ -117,7 +113,7 @@ def l_rad(k, p, qa, qb, p_on_element):
 
                 return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
-            return l_rad(0.0, p, qa, qb, True) + complex_quad(generatorFunc, qa, qb)
+            return l_rad_p(0.0, p, qa, qb, True) + complex_quad(generatorFunc, qa, qb)
 
     else:
         if k == 0.0:
@@ -154,9 +150,14 @@ def l_rad(k, p, qa, qb, p_on_element):
             return complex_quad(generatorFunc, qa, qb)
 
 
-def m_rad(k, p, qa, qb, p_on_element):
+def l_rad(k, p, qa, qb, p_on_element):
     if bOptimized:
-        return m_rad_c(k, p, qa, qb, p_on_element)
+        return l_rad_c(k, p, qa, qb, p_on_element)
+    else:
+        return l_rad_p(k, p, qa, qb, p_on_element)
+
+
+def m_rad_p(k, p, qa, qb, p_on_element):
     qab = qb - qa
     vec_q = normal_2d(qa, qb)
 
@@ -208,9 +209,14 @@ def m_rad(k, p, qa, qb, p_on_element):
             return complex_quad(generatorFunc, qa, qb)
 
 
-def mt_rad(k, p, vecp, qa, qb, p_on_element):
+def m_rad(k, p, qa, qb, p_on_element):
     if bOptimized:
-        return mt_rad_c(k, p, vecp, qa, qb, p_on_element)
+        return m_rad_c(k, p, qa, qb, p_on_element)
+    else:
+        return m_rad_p(k, p, qa, qb, p_on_element)
+
+
+def mt_rad_p(k, p, vecp, qa, qb, p_on_element):
     qab = qb - qa
 
     # subdived circular integral into sections of
@@ -228,7 +234,7 @@ def mt_rad(k, p, vecp, qa, qb, p_on_element):
             def circleFunc(x):
                 q3 = np.array([r * x[0], r * x[1], z], dtype=np.float32)
                 rr = q3 - p3
-                dotRnP = vecp[0] * rr[0] + vec[1] * rr[2]
+                dotRnP = vecp[0] * rr[0] + vecp[1] * rr[2]
                 return dotRnP / (norm(rr) * np.dot(rr, rr))
 
             return circle.integrate(circleFunc) * r / (2.0 * np.pi)
@@ -260,9 +266,14 @@ def mt_rad(k, p, vecp, qa, qb, p_on_element):
             return complex_quad(generatorFunc, qa, qb)
 
 
-def n_rad(k, p, vecp, qa, qb, p_on_element):
+def mt_rad(k, p, vecp, qa, qb, p_on_element):
     if bOptimized:
-        return n_rad_c(k, p, vecp, qa, qb, p_on_element)
+        return mt_rad_c(k, p, vecp, qa, qb, p_on_element)
+    else:
+        return mt_rad_p(k, p, vecp, qa, qb, p_on_element)
+
+
+def n_rad_p(k, p, vecp, qa, qb, p_on_element):
     qab = qb - qa
     vec_q = normal_2d(qa, qb)
 
@@ -369,7 +380,7 @@ def n_rad(k, p, vecp, qa, qb, p_on_element):
 
                 return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
-            return complex_quad(generatorFunc, qa, qb)
+            return 0.0 # complex_quad(generatorFunc, qa, qb)
         else:
             def generatorFunc(x):
                 circle = CircularIntegratorPi(nSections)
@@ -395,3 +406,10 @@ def n_rad(k, p, vecp, qa, qb, p_on_element):
                 return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
             return complex_quad(generatorFunc, qa, qb)
+
+
+def n_rad(k, p, vecp, qa, qb, p_on_element):
+    if bOptimized:
+        return n_rad_c(k, p, vecp, qa, qb, p_on_element)
+    else:
+        return n_rad_p(k, p, vecp, qa, qb, p_on_element)
