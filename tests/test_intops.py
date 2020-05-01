@@ -494,7 +494,8 @@ class TestComputeL_RAD(unittest.TestCase):
         pOnElement = True
         zP = l_rad_p(k, p, a, b, pOnElement)
         zC = l_rad_c(k, p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC)
+        self.assertAlmostEqual(zP, zC
+                               )
 
 
 class TestComputeM_RAD(unittest.TestCase):
@@ -536,7 +537,7 @@ class TestComputeM_RAD(unittest.TestCase):
         pOnElement = True
         zP = m_rad_p(k, p, a, b, pOnElement)
         zC = m_rad_c(k, p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC)
+        self.assertAlmostEqual(zP, zC, 6)
 
 
 class TestComputeMt_RAD(unittest.TestCase):
@@ -549,7 +550,7 @@ class TestComputeMt_RAD(unittest.TestCase):
         pOnElement = False
         zP = mt_rad_p(k, p, normal_p, a, b, pOnElement)
         zC = mt_rad_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC)
 
     def test_compute_Mt_02(self):
         k = 10.0
@@ -560,7 +561,7 @@ class TestComputeMt_RAD(unittest.TestCase):
         pOnElement = False
         zP = mt_rad_p(k, p, normal_p, a, b, pOnElement)
         zC = mt_rad_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC, 6)
 
     def test_compute_Mt_03(self):
         k = 0.0
@@ -571,7 +572,7 @@ class TestComputeMt_RAD(unittest.TestCase):
         pOnElement = True
         zP = mt_rad_p(k, p, normal_p, a, b, pOnElement)
         zC = mt_rad_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC)
 
     def test_compute_Mt_04(self):
         k = 10.0
@@ -582,7 +583,7 @@ class TestComputeMt_RAD(unittest.TestCase):
         pOnElement = True
         zP = mt_rad_p(k, p, normal_p, a, b, pOnElement)
         zC = mt_rad_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC)
 
 
 class TestComputeN_RAD(unittest.TestCase):
@@ -595,7 +596,7 @@ class TestComputeN_RAD(unittest.TestCase):
         pOnElement = False
         zP = n_rad_p(k, p, normal_p, a, b, pOnElement)
         zC = n_rad_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC)
 
     def test_compute_N_02(self):
         k = 10.0
@@ -606,7 +607,7 @@ class TestComputeN_RAD(unittest.TestCase):
         pOnElement = False
         zP = n_rad_p(k, p, normal_p, a, b, pOnElement)
         zC = n_rad_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC, 6)
 
     def test_compute_N_03(self):
         k = 0.0
@@ -617,7 +618,7 @@ class TestComputeN_RAD(unittest.TestCase):
         pOnElement = True
         zP = n_rad_p(k, p, normal_p, a, b, pOnElement)
         zC = n_rad_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC, 6)
 
     def test_compute_N_04(self):
         k = 10.0
@@ -628,7 +629,7 @@ class TestComputeN_RAD(unittest.TestCase):
         pOnElement = True
         zP = n_rad_p(k, p, normal_p, a, b, pOnElement)
         zC = n_rad_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC, 5)
 
 
 if __name__ == "__main__":

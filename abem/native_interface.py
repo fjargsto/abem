@@ -1,7 +1,11 @@
 from ctypes import CDLL, c_int, c_float, c_void_p, Structure
+import os, sysconfig
 
+if os.name == "nt":
+    intops = CDLL(r"C:\Users\frank\BoundaryElementMethod\abem\x64\Debug\intops")
+elif os.name == "posix":
+    intops = CDLL("intops" + (sysconfig.get_config_var("EXT_SUFFIX") or ".so"))
 
-intops = CDLL(r"C:\Users\frank\BoundaryElementMethod\abem\x64\Debug\intops")
 intops.Hankel1.argtypes = [c_int, c_float, c_void_p]
 
 

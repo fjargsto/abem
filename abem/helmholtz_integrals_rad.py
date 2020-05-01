@@ -27,7 +27,7 @@ class CircularIntegratorPi(object):
 
         factor = np.pi / self.segments
         for i in range(nSamples):
-            arcAbscissa = i / self.samples.shape[0] + self.samples[i % self.samples.shape[0], 0]
+            arcAbscissa = i // self.samples.shape[0] + self.samples[i % self.samples.shape[0], 0]
             arcAbscissa *= factor
             self.rotationFactors[i, :] = np.cos(arcAbscissa), np.sin(arcAbscissa)
 
@@ -72,7 +72,7 @@ def complex_quad_cone(func, start, end, segments = 1):
     return sum
 
 
-bOptimized = False
+bOptimized = True
 
 
 def l_rad_p(k, p, qa, qb, p_on_element):
@@ -82,9 +82,6 @@ def l_rad_p(k, p, qa, qb, p_on_element):
     q = 0.5 * (qa + qb)
     nSections = 1 + int(q[0] * np.pi / norm(ab))
     if p_on_element:
-        ap = p - qa
-
-
         if k == 0.0:
             def generatorFunc(x):
                 circle = CircularIntegratorPi(2 * nSections)
@@ -383,7 +380,7 @@ def n_rad_p(k, p, vecp, qa, qb, p_on_element):
 
                 return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
-            return complex_quad(generatorFunc, qa, qb)
+            return 0.0 # complex_quad(generatorFunc, qa, qb)
         else:
             def generatorFunc(x):
                 circle = CircularIntegratorPi(nSections)
