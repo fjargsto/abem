@@ -1,3 +1,4 @@
+from .config import *
 from .acoustic_properties import *
 from .boundary_factories import *
 from .boundary_solutions import *

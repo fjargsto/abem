@@ -2,8 +2,7 @@ import numpy as np
 from numpy.linalg import norm
 from .normals import normal_3d
 from .helmholtz_integrals_3d_c import l_3d_c, m_3d_c, mt_3d_c, n_3d_c
-
-bOptimized = True
+from .config import Config
 
 
 def complex_quad(func, a, b, c):
@@ -78,7 +77,7 @@ def l_3d_p(k, p, qa, qb, qc, p_on_element):
 
 
 def l_3d(k, p, qa, qb, qc, p_on_element):
-    if bOptimized:
+    if Config.use_c_implementation:
         return l_3d_c(k, p, qa, qb, qc, p_on_element)
     else:
         return l_3d_p(k, p, qa, qb, qc, p_on_element)
@@ -107,7 +106,7 @@ def m_3d_p(k, p, qa, qb, qc, p_on_element):
 
 
 def m_3d(k, p, qa, qb, qc, p_on_element):
-    if bOptimized:
+    if Config.use_c_implementation:
         return m_3d_c(k, p, qa, qb, qc, p_on_element)
     else:
         return m_3d_p(k, p, qa, qb, qc, p_on_element)
@@ -135,7 +134,7 @@ def mt_3d_p(k, p, vecp, qa, qb, qc, p_on_element):
 
 
 def mt_3d(k, p, vecp, qa, qb, qc, p_on_element):
-    if bOptimized:
+    if Config.use_c_implementation:
         return mt_3d_c(k, p, vecp, qa, qb, qc, p_on_element)
     else:
         return mt_3d_p(k, p, vecp, qa, qb, qc, p_on_element)
@@ -186,8 +185,8 @@ def n_3d_p(k, p, vecp, qa, qb, qc, p_on_element):
                 fpgrr = (np.exp(ikr) * (2.0 - 2.0*ikr - kr*kr) - 2.0) / (R * np.dot(r, r))
 
                 return fpgr * rnpnq + fpgrr * rnprnq + (0.5*k*k) * fpg
-            N0 = n_3d(0.0, p, vecp, qa, qb, qc, True)
-            L0 = l_3d(0.0, p, qa, qb, qc, True)
+            N0 = n_3d_p(0.0, p, vecp, qa, qb, qc, True)
+            L0 = l_3d_p(0.0, p, qa, qb, qc, True)
             Nk = complex_quad(func, qa, qb, p) + complex_quad(func, qb, qc, p) + complex_quad(func, qc, qa, p)
             return N0 - (0.5*k*k) * L0 + Nk / (4.0 * np.pi)
     else:
@@ -216,7 +215,7 @@ def n_3d_p(k, p, vecp, qa, qb, qc, p_on_element):
 
 
 def n_3d(k, p, vecp, qa, qb, qc, p_on_element):
-    if bOptimized:
+    if Config.use_c_implementation:
         return n_3d_c(k, p, vecp, qa, qb, qc, p_on_element)
     else:
         return n_3d_p(k, p, vecp, qa, qb, qc, p_on_element)

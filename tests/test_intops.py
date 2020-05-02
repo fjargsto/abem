@@ -19,9 +19,7 @@ class TestComplexQuadGenerator(unittest.TestCase):
             return 1.0
 
         result = complex_quad_generator(func, a, b)
-        self.assertAlmostEqual(
-            result, np.sqrt(2.0), 6, msg="{} != {}".format(result, np.sqrt(2.0))
-        )
+        self.assertAlmostEqual(result, np.sqrt(2.0), 6)
 
 
 class TestCircularIntegratorPI(unittest.TestCase):
@@ -32,7 +30,7 @@ class TestCircularIntegratorPI(unittest.TestCase):
             return 1.0
 
         result = circle.integrate(func)
-        self.assertAlmostEqual(result, np.pi, msg="{} != {}".format(result, np.pi))
+        self.assertAlmostEqual(result, np.pi)
 
     def test_circular_integrator_02(self):
         circle = CircularIntegratorPi(2)
@@ -41,7 +39,7 @@ class TestCircularIntegratorPI(unittest.TestCase):
             return 1.0
 
         result = circle.integrate(func)
-        self.assertAlmostEqual(result, np.pi, msg="{} != {}".format(result, np.pi))
+        self.assertAlmostEqual(result, np.pi)
 
 
 class TestTriangleIntegrator(unittest.TestCase):
@@ -53,29 +51,29 @@ class TestTriangleIntegrator(unittest.TestCase):
         b = np.array([0, 1, 0], dtype=np.float32)
         c = np.array([0, 0, 1], dtype=np.float32)
         result = complex_quad(func, a, b, c)
-        self.assertAlmostEqual(result, 0.5, msg="{} != {}".format(result, 0.5))
+        self.assertAlmostEqual(result, 0.5)
 
 
 class TestHankel(unittest.TestCase):
     def test_hankel_01(self):
         H1scipy = hankel1(0, 1.0)
         H1gsl = hankel1_c(0, 1.0)
-        self.assertAlmostEqual(H1scipy, H1gsl, msg="{} != {}".format(H1scipy, H1gsl))
+        self.assertAlmostEqual(H1scipy, H1gsl)
 
     def test_hankel_02(self):
         H1scipy = hankel1(0, 10.0)
         H1gsl = hankel1_c(0, 10.0)
-        self.assertAlmostEqual(H1scipy, H1gsl, msg="{} != {}".format(H1scipy, H1gsl))
+        self.assertAlmostEqual(H1scipy, H1gsl)
 
     def test_hankel_03(self):
         H1scipy = hankel1(1, 1.0)
         H1gsl = hankel1_c(1, 1.0)
-        self.assertAlmostEqual(H1scipy, H1gsl, msg="{} != {}".format(H1scipy, H1gsl))
+        self.assertAlmostEqual(H1scipy, H1gsl)
 
     def test_hankel_04(self):
         H1scipy = hankel1(1, 10.0)
         H1gsl = hankel1_c(1, 10.0)
-        self.assertAlmostEqual(H1scipy, H1gsl, msg="{} != {}".format(H1scipy, H1gsl))
+        self.assertAlmostEqual(H1scipy, H1gsl)
 
 
 # -----------------------------------------------------------------------------
@@ -175,7 +173,7 @@ class TestComputeMt_2D(unittest.TestCase):
         pOnElement = False
         zP = mt_2d_p(k, p, normal_p, a, b, pOnElement)
         zC = mt_2d_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC)
 
     def test_compute_Mt_02(self):
         k = 10.0
@@ -186,7 +184,7 @@ class TestComputeMt_2D(unittest.TestCase):
         pOnElement = False
         zP = mt_2d_p(k, p, normal_p, a, b, pOnElement)
         zC = mt_2d_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC)
 
     def test_compute_Mt_03(self):
         k = 0.0
@@ -197,7 +195,7 @@ class TestComputeMt_2D(unittest.TestCase):
         pOnElement = True
         zP = mt_2d_p(k, p, normal_p, a, b, pOnElement)
         zC = mt_2d_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC)
 
     def test_compute_Mt_04(self):
         k = 10.0
@@ -208,7 +206,7 @@ class TestComputeMt_2D(unittest.TestCase):
         pOnElement = True
         zP = mt_2d_p(k, p, normal_p, a, b, pOnElement)
         zC = mt_2d_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC)
 
 
 class TestComputeN_2D(unittest.TestCase):
@@ -221,7 +219,7 @@ class TestComputeN_2D(unittest.TestCase):
         pOnElement = False
         zP = n_2d_p(k, p, normal_p, a, b, pOnElement)
         zC = n_2d_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC)
 
     def test_compute_N_02(self):
         k = 10.0
@@ -232,7 +230,7 @@ class TestComputeN_2D(unittest.TestCase):
         pOnElement = False
         zP = n_2d_p(k, p, normal_p, a, b, pOnElement)
         zC = n_2d_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC, 6)
 
     def test_compute_N_03(self):
         k = 0.0
@@ -243,7 +241,7 @@ class TestComputeN_2D(unittest.TestCase):
         pOnElement = True
         zP = n_2d_p(k, p, normal_p, a, b, pOnElement)
         zC = n_2d_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC)
 
     def test_compute_N_04(self):
         k = 10.0
@@ -254,7 +252,7 @@ class TestComputeN_2D(unittest.TestCase):
         pOnElement = True
         zP = n_2d_p(k, p, normal_p, a, b, pOnElement)
         zC = n_2d_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC, 3)
 
 
 # -----------------------------------------------------------------------------
@@ -363,7 +361,7 @@ class TestComputeMt_3D(unittest.TestCase):
         pOnElement = False
         zP = mt_3d_p(k, p, normal_p, a, b, c, pOnElement)
         zC = mt_3d_c(k, p, normal_p, a, b, c, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC)
 
     def test_compute_Mt_02(self):
         k = 10.0
@@ -375,7 +373,7 @@ class TestComputeMt_3D(unittest.TestCase):
         pOnElement = False
         zP = mt_3d_p(k, p, normal_p, a, b, c, pOnElement)
         zC = mt_3d_c(k, p, normal_p, a, b, c, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC)
 
     def test_compute_Mt_03(self):
         k = 0.0
@@ -387,7 +385,7 @@ class TestComputeMt_3D(unittest.TestCase):
         pOnElement = True
         zP = mt_3d_p(k, p, normal_p, a, b, c, pOnElement)
         zC = mt_3d_c(k, p, normal_p, a, b, c, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC)
 
     def test_compute_Mt_04(self):
         k = 10.0
@@ -399,7 +397,7 @@ class TestComputeMt_3D(unittest.TestCase):
         pOnElement = True
         zP = mt_3d_p(k, p, normal_p, a, b, c, pOnElement)
         zC = mt_3d_c(k, p, normal_p, a, b, c, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC)
 
 
 class TestComputeN_3D(unittest.TestCase):
@@ -413,7 +411,7 @@ class TestComputeN_3D(unittest.TestCase):
         pOnElement = False
         zP = n_3d_p(k, p, normal_p, a, b, c, pOnElement)
         zC = n_3d_c(k, p, normal_p, a, b, c, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC)
 
     def test_compute_N_02(self):
         k = 10.0
@@ -425,7 +423,7 @@ class TestComputeN_3D(unittest.TestCase):
         pOnElement = False
         zP = n_3d_p(k, p, normal_p, a, b, c, pOnElement)
         zC = n_3d_c(k, p, normal_p, a, b, c, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC)
 
     def test_compute_N_03(self):
         k = 0.0
@@ -437,7 +435,7 @@ class TestComputeN_3D(unittest.TestCase):
         pOnElement = True
         zP = n_3d_p(k, p, normal_p, a, b, c, pOnElement)
         zC = n_3d_c(k, p, normal_p, a, b, c, pOnElement)
-        self.assertAlmostEqual(zP, zC, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC)
 
     def test_compute_N_04(self):
         k = 10.0
@@ -449,7 +447,7 @@ class TestComputeN_3D(unittest.TestCase):
         pOnElement = True
         zP = n_3d_p(k, p, normal_p, a, b, c, pOnElement)
         zC = n_3d_c(k, p, normal_p, a, b, c, pOnElement)
-        self.assertAlmostEqual(zP, zC, 6, msg="{} != {}".format(zP, zC))
+        self.assertAlmostEqual(zP, zC, 5)
 
 
 # -----------------------------------------------------------------------------
@@ -494,8 +492,7 @@ class TestComputeL_RAD(unittest.TestCase):
         pOnElement = True
         zP = l_rad_p(k, p, a, b, pOnElement)
         zC = l_rad_c(k, p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC
-                               )
+        self.assertAlmostEqual(zP, zC)
 
 
 class TestComputeM_RAD(unittest.TestCase):
