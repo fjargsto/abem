@@ -3,8 +3,8 @@ from numpy.linalg import norm
 from scipy.special import hankel1
 from .normals import normal_2d
 from .helmholtz_integrals_2d_c import l_2d_c, m_2d_c, mt_2d_c, n_2d_c
+from .config import Config
 
-bOptimized = True
 
 def complex_quad(func, start, end):
     samples = np.array(
@@ -57,13 +57,10 @@ def l_2d_p(k, p, qa, qb, p_on_element):
 
 
 def l_2d(k, p, qa, qb, p_on_element):
-    result_p = l_2d_p(k, p, qa, qb, p_on_element)
-    result_c = l_2d_c(k, p, qa, qb, p_on_element)
-    assert abs(result_c - result_p) < 0.0000001
-    if bOptimized:
-        return result_c
+    if Config.use_c_implementation:
+        return l_2d_c(k, p, qa, qb, p_on_element)
     else:
-        return result_p
+        return l_2d_p(k, p, qa, qb, p_on_element)
 
 
 def m_2d_p(k, p, qa, qb, p_on_element):
@@ -94,15 +91,13 @@ def m_2d(k, p, qa, qb, p_on_element):
     result_p = m_2d_p(k, p, qa, qb, p_on_element)
     result_c = m_2d_c(k, p, qa, qb, p_on_element)
     assert abs(result_c - result_p) < 0.0000001
-    if bOptimized:
+    if Config.use_c_implementation:
         return result_c
     else:
         return result_p
 
 
 def mt_2d_p(k, p, vecp, qa, qb, p_on_element):
-    if bOptimized:
-        return mt_2d_c(k, p, vecp, qa, qb, p_on_element)
     if p_on_element:
         return 0.0
     else:
@@ -124,15 +119,13 @@ def mt_2d_p(k, p, vecp, qa, qb, p_on_element):
 
 
 def mt_2d(k, p, vecp, qa, qb, p_on_element):
-    if bOptimized:
+    if Config.use_c_implementation:
         return mt_2d_c(k, p, vecp, qa, qb, p_on_element)
     else:
         return mt_2d_p(k, p, vecp, qa, qb, p_on_element)
 
 
 def n_2d_p(k, p, vecp, qa, qb, p_on_element):
-    if bOptimized:
-        return n_2d_c(k, p, vecp, qa, qb, p_on_element)
     qab = qb - qa
     if p_on_element:
         ra = norm(p - qa)
@@ -160,8 +153,8 @@ def n_2d_p(k, p, vecp, qa, qb, p_on_element):
                 return c1 * dpnu + c2 * drdudrdn + c3
 
             return (
-                n_2d(0.0, p, vecp, qa, qb, True)
-                - 0.5 * k_sqr * l_2d(0.0, p, qa, qb, True)
+                n_2d_p(0.0, p, vecp, qa, qb, True)
+                - 0.5 * k_sqr * l_2d_p(0.0, p, qa, qb, True)
                 + complex_quad(func, qa, p)
                 + complex_quad(func, p, qb)
             )
@@ -192,7 +185,7 @@ def n_2d_p(k, p, vecp, qa, qb, p_on_element):
 
 
 def n_2d(k, p, vecp, qa, qb, p_on_element):
-    if bOptimized:
+    if Config.use_c_implementation:
         return n_2d_c(k, p, vecp, qa, qb, p_on_element)
     else:
         return n_2d_p(k, p, vecp, qa, qb, p_on_element)

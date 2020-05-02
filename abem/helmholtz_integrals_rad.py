@@ -3,6 +3,7 @@ from numpy.linalg import norm
 from .helmholtz_integrals_2d import complex_quad
 from .helmholtz_integrals_rad_c import l_rad_c, m_rad_c, mt_rad_c, n_rad_c
 from .normals import normal_2d
+from .config import Config
 
 
 class CircularIntegratorPi(object):
@@ -70,9 +71,6 @@ def complex_quad_cone(func, start, end, segments = 1):
         sum += complex_quad(func, start + s * delta, start + (s + 1) * delta)
 
     return sum
-
-
-bOptimized = True
 
 
 def l_rad_p(k, p, qa, qb, p_on_element):
@@ -151,7 +149,7 @@ def l_rad_p(k, p, qa, qb, p_on_element):
 
 
 def l_rad(k, p, qa, qb, p_on_element):
-    if bOptimized:
+    if Config.use_c_implementation:
         return l_rad_c(k, p, qa, qb, p_on_element)
     else:
         return l_rad_p(k, p, qa, qb, p_on_element)
@@ -210,7 +208,7 @@ def m_rad_p(k, p, qa, qb, p_on_element):
 
 
 def m_rad(k, p, qa, qb, p_on_element):
-    if bOptimized:
+    if Config.use_c_implementation:
         return m_rad_c(k, p, qa, qb, p_on_element)
     else:
         return m_rad_p(k, p, qa, qb, p_on_element)
@@ -267,7 +265,7 @@ def mt_rad_p(k, p, vecp, qa, qb, p_on_element):
 
 
 def mt_rad(k, p, vecp, qa, qb, p_on_element):
-    if bOptimized:
+    if Config.use_c_implementation:
         return mt_rad_c(k, p, vecp, qa, qb, p_on_element)
     else:
         return mt_rad_p(k, p, vecp, qa, qb, p_on_element)
@@ -351,8 +349,8 @@ def n_rad_p(k, p, vecp, qa, qb, p_on_element):
 
                 return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
-            return n_rad(0.0, p, vecp, qa, qb, True) \
-                - k ** 2 * l_rad(0.0, p, qa, qb, True) / 2.0 \
+            return n_rad_p(0.0, p, vecp, qa, qb, True) \
+                - k ** 2 * l_rad_p(0.0, p, qa, qb, True) / 2.0 \
                 + complex_quad(generatorFunc, qa, p) + complex_quad(generatorFunc, p, qb)
 
     else:
@@ -409,7 +407,7 @@ def n_rad_p(k, p, vecp, qa, qb, p_on_element):
 
 
 def n_rad(k, p, vecp, qa, qb, p_on_element):
-    if bOptimized:
+    if Config.use_c_implementation:
         return n_rad_c(k, p, vecp, qa, qb, p_on_element)
     else:
         return n_rad_p(k, p, vecp, qa, qb, p_on_element)
