@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.linalg import norm
 from .normals import normal_3d
-from .helmholtz_integrals_3d_c import l_3d_c, m_3d_c, mt_3d_c, n_3d_c
+from intops import l_3d_c, m_3d_c, mt_3d_c, n_3d_c
 from .config import Config
 
 

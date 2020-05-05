@@ -2,7 +2,7 @@ import numpy as np
 from numpy.linalg import norm
 from scipy.special import hankel1
 from .normals import normal_2d
-from .helmholtz_integrals_2d_c import l_2d_c, m_2d_c, mt_2d_c, n_2d_c
+from intops import l_2d_c, m_2d_c, mt_2d_c, n_2d_c
 from .config import Config
 
 

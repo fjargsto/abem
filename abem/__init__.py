@@ -3,11 +3,8 @@ from .acoustic_properties import *
 from .boundary_factories import *
 from .boundary_solutions import *
 from .helmholtz_integrals_2d import *
-from .helmholtz_integrals_2d_c import *
 from .helmholtz_integrals_3d import *
-from .helmholtz_integrals_3d_c import *
 from .helmholtz_integrals_rad import *
-from .helmholtz_integrals_rad_c import *
 from .helmholtz_solver import *
 from .helmholtz_solver_2d import *
 from .helmholtz_solver_3d import *
