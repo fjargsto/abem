@@ -1,6 +1,11 @@
 from setuptools import setup, Extension
+from Cython.Build import cythonize
 
-intops = Extension("intops", sources=["intops/intops.c"], language="c",)
+intops = Extension("intops",
+                   sources=[
+                       "intops/helmholtz_integrals.pyx",
+                       "intops/intops.c"],
+                   language="c",)
 
 
 def readme():
@@ -27,7 +32,8 @@ setup(
     packages=["abem"],
     install_requires=requirements(),
     zip_safe=False,
-    ext_modules=[intops],
+    ext_modules=cythonize(intops,
+                          include_path=["intops"]),
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     test_suite="tests",

@@ -3,11 +3,9 @@ import numpy as np
 from scipy.special import hankel1
 
 from abem.helmholtz_integrals_2d import l_2d_p, m_2d_p, mt_2d_p, n_2d_p
-from abem.helmholtz_integrals_2d_c import hankel1_c, l_2d_c, m_2d_c, mt_2d_c, n_2d_c
+from intops import *
 from abem.helmholtz_integrals_3d import l_3d_p, m_3d_p, mt_3d_p, n_3d_p, complex_quad
-from abem.helmholtz_integrals_3d_c import l_3d_c, m_3d_c, mt_3d_c, n_3d_c
 from abem.helmholtz_integrals_rad import l_rad_p, m_rad_p, mt_rad_p, n_rad_p, complex_quad_generator, CircularIntegratorPi
-from abem.helmholtz_integrals_rad_c import l_rad_c, m_rad_c, mt_rad_c, n_rad_c
 
 
 class TestComplexQuadGenerator(unittest.TestCase):
@@ -514,7 +512,7 @@ class TestComputeM_RAD(unittest.TestCase):
         pOnElement = False
         zP = m_rad_p(k, p, a, b, pOnElement)
         zC = m_rad_c(k, p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC)
+        self.assertAlmostEqual(zP, zC, 6)
 
     def test_compute_M_03(self):
         k = 0.0

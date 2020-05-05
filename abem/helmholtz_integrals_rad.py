@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.linalg import norm
 from .helmholtz_integrals_2d import complex_quad
-from .helmholtz_integrals_rad_c import l_rad_c, m_rad_c, mt_rad_c, n_rad_c
+from intops import l_rad_c, m_rad_c, mt_rad_c, n_rad_c
 from .normals import normal_2d
 from .config import Config
 

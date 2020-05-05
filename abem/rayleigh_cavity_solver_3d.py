@@ -1,12 +1,6 @@
 from .rayleigh_cavity_solver import RayleighCavitySolver
 from .boundary_solutions import SampleSolution
-
-
-bOptimized = True
-if bOptimized:
-    from .helmholtz_integrals_3d_c import *
-else:
-    from .helmholtz_integrals_3d import *
+from .helmholtz_integrals_3d import *
 
 
 class RayleighCavitySolver3D(RayleighCavitySolver):

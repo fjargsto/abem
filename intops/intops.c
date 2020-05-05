@@ -1,5 +1,5 @@
 /* --------------------------------------------------------------------------- *
- * Copyright (C) 2017 Frank Jargstorff                                         *
+ * Copyright (C) 2017, 2020 Frank Jargstorff                                   *
  *                                                                             *
  * This file is part of the AcousticBEM library.                               *
  * AcousticBEM is free software: you can redistribute it and/or modify         *
@@ -15,7 +15,8 @@
  * You should have received a copy of the GNU General Public License           *
  * along with AcousticBEM.  If not, see <http://www.gnu.org/licenses/>.        *
  * --------------------------------------------------------------------------- */
-#include <stdbool.h>
+#include "intops.h"
+
 #include <stdio.h>
 #include <math.h>
 #include <complex.h>
@@ -24,34 +25,6 @@
 
 #define MAX_LINE_RULE_SAMPLES 4096
 
-/* Used to be intops.h                                                        */
-/* ************************************************************************** */
-/* Struct representing points in 2-dimensional Euclidean space. */
-typedef struct {
-  float x;
-  float y;
-} Float2;
-
-/* Struct representing points in 3-dimensional Euclidean space. */
-typedef struct {
-  float x;
-  float y;
-  float z;
-} Float3;
-
-Float2 add2f(Float2 a, Float2 b);
-
-Float2 sub2f(Float2 a, Float2 b);
-Float3 sub3f(Float3 a, Float3 b);
-
-Float2 smul2f(float a, Float2 x);
-Float3 smul3f(float a, Float3 x);
-
-float dot2f(Float2 a, Float2 b);
-float dot3f(Float3 a, Float3 b);
-
-float norm2f(Float2 a);
-float norm3f(Float3 a);
 
 /* Integration rule for 1-dimensional integrals.
  *
@@ -152,11 +125,6 @@ void semiCircleIntegralRule(int nSections, IntRule1D intRule, IntRule2D * pSemiC
 complex float complexLineIntegral(complex float(*integrand)(Float2, void*), void * state, IntRule2D intRule);
 /* ********************************************************************************************** */
 
-
-typedef struct {
-  float re;
-  float im;
-} Complex;
 
 float aX_1D[] = {0.980144928249f,     0.898333238707f, 0.762766204958f, 0.591717321248f,
 		 0.408282678752f,     0.237233795042f, 0.101666761293f, 1.985507175123E-02f};
