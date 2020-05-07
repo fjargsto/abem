@@ -624,7 +624,7 @@ class TestComputeN_RAD(unittest.TestCase):
         pOnElement = True
         zP = n_rad_p(k, p, normal_p, a, b, pOnElement)
         zC = n_rad_c(k, p, normal_p, a, b, pOnElement)
-        self.assertAlmostEqual(zP, zC, 5)
+        self.assertAlmostEqual(zP, zC, 4)
 
 
 if __name__ == "__main__":

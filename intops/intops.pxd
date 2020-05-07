@@ -2,9 +2,11 @@ cdef extern from "stdbool.h":
     ctypedef bint bool
 
 cdef extern from "intops.h":
-    ctypedef struct Float2:
+    cdef cppclass Float2:
         float x
         float y
+
+    Float2 operator+(Float2, Float2)
 
     ctypedef struct Float3:
         float x

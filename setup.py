@@ -4,8 +4,8 @@ from Cython.Build import cythonize
 intops = Extension("intops",
                    sources=[
                        "intops/helmholtz_integrals.pyx",
-                       "intops/intops.c"],
-                   language="c",)
+                       "intops/intops.cpp"],
+                   language="c++",)
 
 
 def readme():
