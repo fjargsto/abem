@@ -1,3 +1,4 @@
+# cython: language_level=3, boundscheck=False
 from intops cimport *
 import numpy as np
 
@@ -10,235 +11,124 @@ cpdef hankel1_c(int order, float x):
 # -----------------------------------------------------------------------------
 # 2D
 # -----------------------------------------------------------------------------
-cpdef l_2d_c(float k, p, qa, qb, bool p_on_element):
+cpdef l_2d_c(float k, float[:] p, float[:] qa, float[:] qb, bool p_on_element):
     cdef Complex result
-    cdef Float2 cp
-    cp.x = p[0]
-    cp.y = p[1]
-    cdef Float2 a
-    a.x = qa[0]
-    a.y = qa[1]
-    cdef Float2 b
-    b.x = qb[0]
-    b.y = qb[1]
-    ComputeL_2D(k, cp, a, b, p_on_element, &result)
+    cdef Float2 *cp = <Float2*>&p[0]
+    cdef Float2 *a = <Float2*>&qa[0]
+    cdef Float2 *b = <Float2*>&qb[0]
+    ComputeL_2D(k, cp[0], a[0], b[0], p_on_element, &result)
     return np.complex64(result.re + result.im * 1j)
 
 
-cpdef m_2d_c(float k, p, qa, qb, bool p_on_element):
+cpdef m_2d_c(float k, float[:] p, float[:] qa, float[:] qb, bool p_on_element):
     cdef Complex result
-    cdef Float2 cp
-    cp.x = p[0]
-    cp.y = p[1]
-    cdef Float2 a
-    a.x = qa[0]
-    a.y = qa[1]
-    cdef Float2 b
-    b.x = qb[0]
-    b.y = qb[1]
-    ComputeM_2D(k, cp, a, b, p_on_element, &result)
+    cdef Float2 *cp = <Float2*>&p[0]
+    cdef Float2 *a = <Float2*>&qa[0]
+    cdef Float2 *b = <Float2*>&qb[0]
+    ComputeM_2D(k, cp[0], a[0], b[0], p_on_element, &result)
     return np.complex64(result.re + result.im * 1j)
 
 
-cpdef mt_2d_c(float k, p, normal_p, qa, qb, bool p_on_element):
+cpdef mt_2d_c(float k, float[:] p, float[:] normal_p, float[:] qa, float[:] qb, bool p_on_element):
     cdef Complex result
-    cdef Float2 cp
-    cp.x = p[0]
-    cp.y = p[1]
-    cdef Float2 c_normal_p
-    c_normal_p.x = normal_p[0]
-    c_normal_p.y = normal_p[1]
-    cdef Float2 a
-    a.x = qa[0]
-    a.y = qa[1]
-    cdef Float2 b
-    b.x = qb[0]
-    b.y = qb[1]
-    ComputeMt_2D(k, cp, c_normal_p, a, b, p_on_element, &result)
+    cdef Float2 *cp = <Float2*>&p[0]
+    cdef Float2 *c_normal_p = <Float2*>&normal_p[0]
+    cdef Float2 *a = <Float2*>&qa[0]
+    cdef Float2 *b = <Float2*>&qb[0]
+    ComputeMt_2D(k, cp[0], c_normal_p[0], a[0], b[0], p_on_element, &result)
     return np.complex64(result.re + result.im * 1j)
 
 
-cpdef n_2d_c(float k, p, normal_p, qa, qb, bool p_on_element):
+cpdef n_2d_c(float k, float[:] p, float[:] normal_p, float[:] qa, float[:] qb, bool p_on_element):
     cdef Complex result
-    cdef Float2 cp
-    cp.x = p[0]
-    cp.y = p[1]
-    cdef Float2 c_normal_p
-    c_normal_p.x = normal_p[0]
-    c_normal_p.y = normal_p[1]
-    cdef Float2 a
-    a.x = qa[0]
-    a.y = qa[1]
-    cdef Float2 b
-    b.x = qb[0]
-    b.y = qb[1]
-    ComputeN_2D(k, cp, c_normal_p, a, b, p_on_element, &result)
+    cdef Float2 *cp = <Float2*>&p[0]
+    cdef Float2 *c_normal_p = <Float2*>&normal_p[0]
+    cdef Float2 *a = <Float2*>&qa[0]
+    cdef Float2 *b = <Float2*>&qb[0]
+    ComputeN_2D(k, cp[0], c_normal_p[0], a[0], b[0], p_on_element, &result)
     return np.complex64(result.re + result.im * 1j)
 
 # -----------------------------------------------------------------------------
 # 3D
 # -----------------------------------------------------------------------------
-cpdef l_3d_c(float k, p, qa, qb, qc, bool p_on_element):
-
+cpdef l_3d_c(float k, float[:] p, float[:] qa, float[:] qb, float[:] qc, bool p_on_element):
     cdef Complex result
-    cdef Float3 cp
-    cp.x = p[0]
-    cp.y = p[1]
-    cp.z = p[2]
-    cdef Float3 a
-    a.x = qa[0]
-    a.y = qa[1]
-    a.z = qa[2]
-    cdef Float3 b
-    b.x = qb[0]
-    b.y = qb[1]
-    b.z = qb[2]
-    cdef Float3 c
-    c.x = qc[0]
-    c.y = qc[1]
-    c.z = qc[2]
-    ComputeL_3D(k, cp, a, b, c, p_on_element, &result)
+    cdef Float3 *cp = <Float3*>&p[0]
+    cdef Float3 *a = <Float3*>&qa[0]
+    cdef Float3 *b = <Float3*>&qb[0]
+    cdef Float3 *c = <Float3*>&qc[0]
+    ComputeL_3D(k, cp[0], a[0], b[0], c[0], p_on_element, &result)
     return np.complex64(result.re+result.im*1j)
 
 
-cpdef m_3d_c(float k, p, qa, qb, qc, bool p_on_element):
+cpdef m_3d_c(float k, float[:] p, float[:] qa, float[:] qb, float[:] qc, bool p_on_element):
     cdef Complex result
-    cdef Float3 cp
-    cp.x = p[0]
-    cp.y = p[1]
-    cp.z = p[2]
-    cdef Float3 a
-    a.x = qa[0]
-    a.y = qa[1]
-    a.z = qa[2]
-    cdef Float3 b
-    b.x = qb[0]
-    b.y = qb[1]
-    b.z = qb[2]
-    cdef Float3 c
-    c.x = qc[0]
-    c.y = qc[1]
-    c.z = qc[2]
-    ComputeM_3D(k, cp, a, b, c, p_on_element, &result)
+    cdef Float3 *cp = <Float3*>&p[0]
+    cdef Float3 *a = <Float3*>&qa[0]
+    cdef Float3 *b = <Float3*>&qb[0]
+    cdef Float3 *c = <Float3*>&qc[0]
+    ComputeM_3D(k, cp[0], a[0], b[0], c[0], p_on_element, &result)
     return np.complex64(result.re+result.im*1j)
 
 
-cpdef mt_3d_c(float k, p, vec_p, qa, qb, qc, bool p_on_element):
+cpdef mt_3d_c(float k, float[:] p, float[:] vec_p, float[:] qa, float[:] qb, float[:] qc, bool p_on_element):
     cdef Complex result
-    cdef Float3 cp
-    cp.x = p[0]
-    cp.y = p[1]
-    cp.z = p[2]
-    cdef Float3 a
-    a.x = qa[0]
-    a.y = qa[1]
-    a.z = qa[2]
-    cdef Float3 b
-    b.x = qb[0]
-    b.y = qb[1]
-    b.z = qb[2]
-    cdef Float3 c
-    c.x = qc[0]
-    c.y = qc[1]
-    c.z = qc[2]
-    cdef Float3 vp
-    vp.x = vec_p[0]
-    vp.y = vec_p[1]
-    vp.z = vec_p[2]
-    ComputeMt_3D(k, cp, vp, a, b, c, p_on_element, &result)
+    cdef Float3 *cp = <Float3*>&p[0]
+    cdef Float3 *a = <Float3*>&qa[0]
+    cdef Float3 *b = <Float3*>&qb[0]
+    cdef Float3 *c = <Float3*>&qc[0]
+    cdef Float3 *vp = <Float3*>&vec_p[0]
+    ComputeMt_3D(k, cp[0], vp[0], a[0], b[0], c[0], p_on_element, &result)
     return np.complex64(result.re+result.im*1j)
 
 
-cpdef n_3d_c(float k, p, vec_p, qa, qb, qc, bool p_on_element):
+cpdef n_3d_c(float k, float[:] p, float[:] vec_p, float[:] qa, float[:] qb, float[:] qc, bool p_on_element):
     cdef Complex result
-    cdef Float3 cp
-    cp.x = p[0]
-    cp.y = p[1]
-    cp.z = p[2]
-    cdef Float3 a
-    a.x = qa[0]
-    a.y = qa[1]
-    a.z = qa[2]
-    cdef Float3 b
-    b.x = qb[0]
-    b.y = qb[1]
-    b.z = qb[2]
-    cdef Float3 c
-    c.x = qc[0]
-    c.y = qc[1]
-    c.z = qc[2]
-    cdef Float3 vp
-    vp.x = vec_p[0]
-    vp.y = vec_p[1]
-    vp.z = vec_p[2]
-    ComputeN_3D(k, cp, vp, a, b, c, p_on_element, &result)
+    cdef Float3 *cp = <Float3*>&p[0]
+    cdef Float3 *a = <Float3*>&qa[0]
+    cdef Float3 *b = <Float3*>&qb[0]
+    cdef Float3 *c = <Float3*>&qc[0]
+    cdef Float3 *vp = <Float3*>&vec_p[0]
+    ComputeN_3D(k, cp[0], vp[0], a[0], b[0], c[0], p_on_element, &result)
     return np.complex64(result.re+result.im*1j)
 
 
 # -----------------------------------------------------------------------------
 # RAD
 # -----------------------------------------------------------------------------
-def l_rad_c(k, p, qa, qb, p_on_element):
+def l_rad_c(float k, float[:] p, float[:] qa, float[:] qb, p_on_element):
     cdef Complex result
-    cdef Float2 cp
-    cp.x = p[0]
-    cp.y = p[1]
-    cdef Float2 a
-    a.x = qa[0]
-    a.y = qa[1]
-    cdef Float2 b
-    b.x = qb[0]
-    b.y = qb[1]
-    ComputeL_RAD(k, cp, a, b, p_on_element, &result)
+    cdef Float2 *cp = <Float2*>&p[0]
+    cdef Float2 *a = <Float2*>&qa[0]
+    cdef Float2 *b = <Float2*>&qb[0]
+    ComputeL_RAD(k, cp[0], a[0], b[0], p_on_element, &result)
     return np.complex64(result.re+result.im*1j)
 
 
-cpdef m_rad_c(float k, p, qa, qb, bool p_on_element):
+cpdef m_rad_c(float k, float[:] p, float[:] qa, float[:] qb, bool p_on_element):
     cdef Complex result
-    cdef Float2 cp
-    cp.x = p[0]
-    cp.y = p[1]
-    cdef Float2 a
-    a.x = qa[0]
-    a.y = qa[1]
-    cdef Float2 b
-    b.x = qb[0]
-    b.y = qb[1]
-    ComputeM_RAD(k, cp, a, b, p_on_element, &result)
+    cdef Float2 *cp = <Float2*>&p[0]
+    cdef Float2 *a = <Float2*>&qa[0]
+    cdef Float2 *b = <Float2*>&qb[0]
+    ComputeM_RAD(k, cp[0], a[0], b[0], p_on_element, &result)
     return np.complex64(result.re+result.im*1j)
 
 
-cpdef mt_rad_c(float k, p, vec_p, qa, qb, bool p_on_element):
+cpdef mt_rad_c(float k, float[:] p, float[:] vec_p, float[:] qa, float[:] qb, bool p_on_element):
     cdef Complex result
-    cdef Float2 cp
-    cp.x = p[0]
-    cp.y = p[1]
-    cdef Float2 c_normal_p
-    c_normal_p.x = vec_p[0]
-    c_normal_p.y = vec_p[1]
-    cdef Float2 a
-    a.x = qa[0]
-    a.y = qa[1]
-    cdef Float2 b
-    b.x = qb[0]
-    b.y = qb[1]
-    ComputeMt_RAD(k, cp, c_normal_p, a, b, p_on_element, &result)
+    cdef Float2 *cp = <Float2*>&p[0]
+    cdef Float2 *c_normal_p = <Float2*>&vec_p[0]
+    cdef Float2 *a = <Float2*>&qa[0]
+    cdef Float2 *b = <Float2*>&qb[0]
+    ComputeMt_RAD(k, cp[0], c_normal_p[0], a[0], b[0], p_on_element, &result)
     return np.complex64(result.re+result.im*1j)
 
 
-cpdef n_rad_c(float k, p, vec_p, qa, qb, bool p_on_element):
+cpdef n_rad_c(float k, float[:] p, float[:] vec_p, float[:] qa, float[:] qb, bool p_on_element):
     cdef Complex result
-    cdef Float2 cp
-    cp.x = p[0]
-    cp.y = p[1]
-    cdef Float2 c_normal_p
-    c_normal_p.x = vec_p[0]
-    c_normal_p.y = vec_p[1]
-    cdef Float2 a
-    a.x = qa[0]
-    a.y = qa[1]
-    cdef Float2 b
-    b.x = qb[0]
-    b.y = qb[1]
-    ComputeN_RAD(k, cp, c_normal_p, a, b, p_on_element, &result)
+    cdef Float2 *cp = <Float2*>&p[0]
+    cdef Float2 *c_normal_p = <Float2*>&vec_p[0]
+    cdef Float2 *a = <Float2*>&qa[0]
+    cdef Float2 *b = <Float2*>&qb[0]
+    ComputeN_RAD(k, cp[0], c_normal_p[0], a[0], b[0], p_on_element, &result)
     return np.complex64(result.re+result.im*1j)

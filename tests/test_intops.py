@@ -165,7 +165,7 @@ class TestComputeMt_2D(unittest.TestCase):
     def test_compute_Mt_01(self):
         k = 0.0
         p = np.array([0.5, 0.75], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)])
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)], dtype=np.float32)
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = False
@@ -176,7 +176,7 @@ class TestComputeMt_2D(unittest.TestCase):
     def test_compute_Mt_02(self):
         k = 10.0
         p = np.array([0.5, 0.75], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)])
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)], dtype=np.float32)
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = False
@@ -187,7 +187,7 @@ class TestComputeMt_2D(unittest.TestCase):
     def test_compute_Mt_03(self):
         k = 0.0
         p = np.array([0.0, 0.05], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)])
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)], dtype=np.float32)
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
@@ -198,7 +198,7 @@ class TestComputeMt_2D(unittest.TestCase):
     def test_compute_Mt_04(self):
         k = 10.0
         p = np.array([0.0, 0.05], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)])
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)], dtype=np.float32)
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
@@ -211,7 +211,7 @@ class TestComputeN_2D(unittest.TestCase):
     def test_compute_N_01(self):
         k = 0.0
         p = np.array([0.5, 0.75], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)])
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)], dtype=np.float32)
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = False
@@ -222,7 +222,7 @@ class TestComputeN_2D(unittest.TestCase):
     def test_compute_N_02(self):
         k = 10.0
         p = np.array([0.5, 0.75], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)])
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)], dtype=np.float32)
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = False
@@ -233,7 +233,7 @@ class TestComputeN_2D(unittest.TestCase):
     def test_compute_N_03(self):
         k = 0.0
         p = np.array([0.0, 0.05], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)])
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)], dtype=np.float32)
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
@@ -244,7 +244,7 @@ class TestComputeN_2D(unittest.TestCase):
     def test_compute_N_04(self):
         k = 10.0
         p = np.array([0.0, 0.05], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)])
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)], dtype=np.float32)
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
@@ -352,7 +352,7 @@ class TestComputeMt_3D(unittest.TestCase):
     def test_compute_Mt_01(self):
         k = 0.0
         p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0])
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0], dtype=np.float32)
         a = np.array([0.0, 0.0, 0.0], dtype=np.float32)
         b = np.array([0.1, 0.0, 0.0], dtype=np.float32)
         c = np.array([0.0, 0.1, 0.0], dtype=np.float32)
@@ -364,7 +364,7 @@ class TestComputeMt_3D(unittest.TestCase):
     def test_compute_Mt_02(self):
         k = 10.0
         p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0])
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0], dtype=np.float32)
         a = np.array([0.0, 0.0, 0.0], dtype=np.float32)
         b = np.array([0.1, 0.0, 0.0], dtype=np.float32)
         c = np.array([0.0, 0.1, 0.0], dtype=np.float32)
@@ -376,7 +376,7 @@ class TestComputeMt_3D(unittest.TestCase):
     def test_compute_Mt_03(self):
         k = 0.0
         p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0])
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0], dtype=np.float32)
         a = np.array([0.0, 0.0, 0.0], dtype=np.float32)
         b = np.array([0.1, 0.0, 0.0], dtype=np.float32)
         c = np.array([0.0, 0.1, 0.0], dtype=np.float32)
@@ -388,7 +388,7 @@ class TestComputeMt_3D(unittest.TestCase):
     def test_compute_Mt_04(self):
         k = 10.0
         p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0])
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0], dtype=np.float32)
         a = np.array([0.0, 0.0, 0.0], dtype=np.float32)
         b = np.array([0.1, 0.0, 0.0], dtype=np.float32)
         c = np.array([0.0, 0.1, 0.0], dtype=np.float32)
@@ -402,7 +402,7 @@ class TestComputeN_3D(unittest.TestCase):
     def test_compute_N_01(self):
         k = 0.0
         p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0])
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0], dtype=np.float32)
         a = np.array([0.0, 0.0, 0.0], dtype=np.float32)
         b = np.array([0.1, 0.0, 0.0], dtype=np.float32)
         c = np.array([0.0, 0.1, 0.0], dtype=np.float32)
@@ -414,7 +414,7 @@ class TestComputeN_3D(unittest.TestCase):
     def test_compute_N_02(self):
         k = 10.0
         p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0])
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0], dtype=np.float32)
         a = np.array([0.0, 0.0, 0.0], dtype=np.float32)
         b = np.array([0.1, 0.0, 0.0], dtype=np.float32)
         c = np.array([0.0, 0.1, 0.0], dtype=np.float32)
@@ -426,7 +426,7 @@ class TestComputeN_3D(unittest.TestCase):
     def test_compute_N_03(self):
         k = 0.0
         p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0])
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0], dtype=np.float32)
         a = np.array([0.0, 0.0, 0.0], dtype=np.float32)
         b = np.array([0.1, 0.0, 0.0], dtype=np.float32)
         c = np.array([0.0, 0.1, 0.0], dtype=np.float32)
@@ -438,7 +438,7 @@ class TestComputeN_3D(unittest.TestCase):
     def test_compute_N_04(self):
         k = 10.0
         p = np.array([0.5, 0.75, 1.0], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0])
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5), 0.0], dtype=np.float32)
         a = np.array([0.0, 0.0, 0.0], dtype=np.float32)
         b = np.array([0.1, 0.0, 0.0], dtype=np.float32)
         c = np.array([0.0, 0.1, 0.0], dtype=np.float32)
@@ -541,7 +541,7 @@ class TestComputeMt_RAD(unittest.TestCase):
         p = np.array([0.3, 0.3], dtype=np.float32)
         a = np.array([0.5, 1.0], dtype=np.float32)
         b = np.array([1.0, 0.3], dtype=np.float32)
-        normal_p = np.array([np.sqrt(0.5), np.sqrt(0.5)])
+        normal_p = np.array([np.sqrt(0.5), np.sqrt(0.5)], dtype=np.float32)
         pOnElement = False
         zP = mt_rad_p(k, p, normal_p, a, b, pOnElement)
         zC = mt_rad_c(k, p, normal_p, a, b, pOnElement)
@@ -552,7 +552,7 @@ class TestComputeMt_RAD(unittest.TestCase):
         p = np.array([0.3, 0.3], dtype=np.float32)
         a = np.array([0.5, 1.0], dtype=np.float32)
         b = np.array([1.0, 0.3], dtype=np.float32)
-        normal_p = np.array([np.sqrt(0.5), np.sqrt(0.5)])
+        normal_p = np.array([np.sqrt(0.5), np.sqrt(0.5)], dtype=np.float32)
         pOnElement = False
         zP = mt_rad_p(k, p, normal_p, a, b, pOnElement)
         zC = mt_rad_c(k, p, normal_p, a, b, pOnElement)
@@ -561,7 +561,7 @@ class TestComputeMt_RAD(unittest.TestCase):
     def test_compute_Mt_03(self):
         k = 0.0
         p = np.array([0.75, 0.75], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)])
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)], dtype=np.float32)
         a = np.array([0.5, 1.0], dtype=np.float32)
         b = np.array([1.0, 0.5], dtype=np.float32)
         pOnElement = True
@@ -572,7 +572,7 @@ class TestComputeMt_RAD(unittest.TestCase):
     def test_compute_Mt_04(self):
         k = 10.0
         p = np.array([0.75, 0.75], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)])
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)], dtype=np.float32)
         a = np.array([0.5, 1.0], dtype=np.float32)
         b = np.array([1.0, 0.5], dtype=np.float32)
         pOnElement = True
@@ -587,7 +587,7 @@ class TestComputeN_RAD(unittest.TestCase):
         p = np.array([0.3, 0.3], dtype=np.float32)
         a = np.array([0.5, 1.0], dtype=np.float32)
         b = np.array([1.0, 0.3], dtype=np.float32)
-        normal_p = np.array([np.sqrt(0.5), np.sqrt(0.5)])
+        normal_p = np.array([np.sqrt(0.5), np.sqrt(0.5)], dtype=np.float32)
         pOnElement = False
         zP = n_rad_p(k, p, normal_p, a, b, pOnElement)
         zC = n_rad_c(k, p, normal_p, a, b, pOnElement)
@@ -598,7 +598,7 @@ class TestComputeN_RAD(unittest.TestCase):
         p = np.array([0.3, 0.3], dtype=np.float32)
         a = np.array([0.5, 1.0], dtype=np.float32)
         b = np.array([1.0, 0.3], dtype=np.float32)
-        normal_p = np.array([np.sqrt(0.5), np.sqrt(0.5)])
+        normal_p = np.array([np.sqrt(0.5), np.sqrt(0.5)], dtype=np.float32)
         pOnElement = False
         zP = n_rad_p(k, p, normal_p, a, b, pOnElement)
         zC = n_rad_c(k, p, normal_p, a, b, pOnElement)
@@ -607,7 +607,7 @@ class TestComputeN_RAD(unittest.TestCase):
     def test_compute_N_03(self):
         k = 0.0
         p = np.array([0.75, 0.75], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)])
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)], dtype=np.float32)
         a = np.array([0.5, 1.0], dtype=np.float32)
         b = np.array([1.0, 0.5], dtype=np.float32)
         pOnElement = True
@@ -618,7 +618,7 @@ class TestComputeN_RAD(unittest.TestCase):
     def test_compute_N_04(self):
         k = 10.0
         p = np.array([0.75, 0.75], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)])
+        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)], dtype=np.float32)
         a = np.array([0.5, 1.0], dtype=np.float32)
         b = np.array([1.0, 0.5], dtype=np.float32)
         pOnElement = True
