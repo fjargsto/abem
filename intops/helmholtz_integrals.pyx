@@ -96,7 +96,7 @@ cpdef n_3d_c(float k, float[:] p, float[:] vec_p, float[:] qa, float[:] qb, floa
 # -----------------------------------------------------------------------------
 # RAD
 # -----------------------------------------------------------------------------
-def l_rad_c(float k, float[:] p, float[:] qa, float[:] qb, p_on_element):
+cpdef l_rad_c(float k, float[:] p, float[:] qa, float[:] qb, p_on_element):
     cdef Complex result
     cdef Float2 *cp = <Float2*>&p[0]
     cdef Float2 *a = <Float2*>&qa[0]
