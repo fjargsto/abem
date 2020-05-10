@@ -1,7 +1,7 @@
 cdef extern from "stdbool.h":
     ctypedef bint bool
 
-cdef extern from "intops.h":
+cdef extern from "iops_cpp.h":
     cdef cppclass Float2:
         float x
         float y

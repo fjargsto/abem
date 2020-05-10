@@ -1,11 +1,37 @@
 from setuptools import setup, Extension
 from Cython.Build import cythonize
+import numpy
 
-intops = Extension("intops",
+
+intops = Extension("iops_cpp",
                    sources=[
-                       "intops/helmholtz_integrals.pyx",
-                       "intops/intops.cpp"],
+                       "iops_cpp/helmholtz_integrals.pyx",
+                       "iops_cpp/iops_cpp.cpp"],
                    language="c++",)
+
+pyntops = Extension("iops_pyx",
+                    sources=["iops_pyx/helmholtz_integrals.pyx"],
+                    include_dirs=[numpy.get_include()])
+
+aprops = Extension("aprops",
+                    sources=["aprops/acoustic_properties.pyx"],
+                    include_dirs=[numpy.get_include()])
+
+abounds = Extension("abounds",
+                    sources=["abounds/mesh.pyx"],
+                    include_dirs=[numpy.get_include()])
+
+solver = Extension("solver",
+                    sources=["solver/solver.pyx"],
+                    include_dirs=[numpy.get_include()])
+
+hsolvers = Extension("hsolvers",
+                    sources=["hsolvers/helmholtz_solver.pyx"],
+                    include_dirs=[numpy.get_include()])
+
+rsolvers = Extension("rsolvers",
+                    sources=["rsolvers/rayleigh_solvers.pyx"],
+                    include_dirs=[numpy.get_include()])
 
 
 def readme():
@@ -32,8 +58,8 @@ setup(
     packages=["abem"],
     install_requires=requirements(),
     zip_safe=False,
-    ext_modules=cythonize(intops,
-                          include_path=["intops"]),
+    ext_modules=cythonize([intops, pyntops, aprops, abounds, solver, hsolvers, rsolvers],
+                          include_path=["intops", "pyntops"]),
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     test_suite="tests",
