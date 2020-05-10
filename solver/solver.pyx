@@ -1,4 +1,4 @@
-from .boundary_solutions import BoundaryCondition
+from abounds import BoundaryCondition
 
 
 class Solver(object):

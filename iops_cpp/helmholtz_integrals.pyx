@@ -1,5 +1,5 @@
 # cython: language_level=3, boundscheck=False
-from intops cimport *
+from iops_cpp cimport *
 import numpy as np
 
 
@@ -11,7 +11,7 @@ cpdef hankel1_c(int order, float x):
 # -----------------------------------------------------------------------------
 # 2D
 # -----------------------------------------------------------------------------
-cpdef l_2d_c(float k, float[:] p, float[:] qa, float[:] qb, bool p_on_element):
+cpdef l_2d(float k, float[:] p, float[:] qa, float[:] qb, bool p_on_element):
     cdef Complex result
     cdef Float2 *cp = <Float2*>&p[0]
     cdef Float2 *a = <Float2*>&qa[0]
@@ -20,7 +20,7 @@ cpdef l_2d_c(float k, float[:] p, float[:] qa, float[:] qb, bool p_on_element):
     return np.complex64(result.re + result.im * 1j)
 
 
-cpdef m_2d_c(float k, float[:] p, float[:] qa, float[:] qb, bool p_on_element):
+cpdef m_2d(float k, float[:] p, float[:] qa, float[:] qb, bool p_on_element):
     cdef Complex result
     cdef Float2 *cp = <Float2*>&p[0]
     cdef Float2 *a = <Float2*>&qa[0]
@@ -29,7 +29,7 @@ cpdef m_2d_c(float k, float[:] p, float[:] qa, float[:] qb, bool p_on_element):
     return np.complex64(result.re + result.im * 1j)
 
 
-cpdef mt_2d_c(float k, float[:] p, float[:] normal_p, float[:] qa, float[:] qb, bool p_on_element):
+cpdef mt_2d(float k, float[:] p, float[:] normal_p, float[:] qa, float[:] qb, bool p_on_element):
     cdef Complex result
     cdef Float2 *cp = <Float2*>&p[0]
     cdef Float2 *c_normal_p = <Float2*>&normal_p[0]
@@ -39,7 +39,7 @@ cpdef mt_2d_c(float k, float[:] p, float[:] normal_p, float[:] qa, float[:] qb, 
     return np.complex64(result.re + result.im * 1j)
 
 
-cpdef n_2d_c(float k, float[:] p, float[:] normal_p, float[:] qa, float[:] qb, bool p_on_element):
+cpdef n_2d(float k, float[:] p, float[:] normal_p, float[:] qa, float[:] qb, bool p_on_element):
     cdef Complex result
     cdef Float2 *cp = <Float2*>&p[0]
     cdef Float2 *c_normal_p = <Float2*>&normal_p[0]
@@ -51,7 +51,7 @@ cpdef n_2d_c(float k, float[:] p, float[:] normal_p, float[:] qa, float[:] qb, b
 # -----------------------------------------------------------------------------
 # 3D
 # -----------------------------------------------------------------------------
-cpdef l_3d_c(float k, float[:] p, float[:] qa, float[:] qb, float[:] qc, bool p_on_element):
+cpdef l_3d(float k, float[:] p, float[:] qa, float[:] qb, float[:] qc, bool p_on_element):
     cdef Complex result
     cdef Float3 *cp = <Float3*>&p[0]
     cdef Float3 *a = <Float3*>&qa[0]
@@ -61,7 +61,7 @@ cpdef l_3d_c(float k, float[:] p, float[:] qa, float[:] qb, float[:] qc, bool p_
     return np.complex64(result.re+result.im*1j)
 
 
-cpdef m_3d_c(float k, float[:] p, float[:] qa, float[:] qb, float[:] qc, bool p_on_element):
+cpdef m_3d(float k, float[:] p, float[:] qa, float[:] qb, float[:] qc, bool p_on_element):
     cdef Complex result
     cdef Float3 *cp = <Float3*>&p[0]
     cdef Float3 *a = <Float3*>&qa[0]
@@ -71,7 +71,7 @@ cpdef m_3d_c(float k, float[:] p, float[:] qa, float[:] qb, float[:] qc, bool p_
     return np.complex64(result.re+result.im*1j)
 
 
-cpdef mt_3d_c(float k, float[:] p, float[:] vec_p, float[:] qa, float[:] qb, float[:] qc, bool p_on_element):
+cpdef mt_3d(float k, float[:] p, float[:] vec_p, float[:] qa, float[:] qb, float[:] qc, bool p_on_element):
     cdef Complex result
     cdef Float3 *cp = <Float3*>&p[0]
     cdef Float3 *a = <Float3*>&qa[0]
@@ -82,7 +82,7 @@ cpdef mt_3d_c(float k, float[:] p, float[:] vec_p, float[:] qa, float[:] qb, flo
     return np.complex64(result.re+result.im*1j)
 
 
-cpdef n_3d_c(float k, float[:] p, float[:] vec_p, float[:] qa, float[:] qb, float[:] qc, bool p_on_element):
+cpdef n_3d(float k, float[:] p, float[:] vec_p, float[:] qa, float[:] qb, float[:] qc, bool p_on_element):
     cdef Complex result
     cdef Float3 *cp = <Float3*>&p[0]
     cdef Float3 *a = <Float3*>&qa[0]
@@ -96,7 +96,7 @@ cpdef n_3d_c(float k, float[:] p, float[:] vec_p, float[:] qa, float[:] qb, floa
 # -----------------------------------------------------------------------------
 # RAD
 # -----------------------------------------------------------------------------
-cpdef l_rad_c(float k, float[:] p, float[:] qa, float[:] qb, p_on_element):
+cpdef l_rad(float k, float[:] p, float[:] qa, float[:] qb, p_on_element):
     cdef Complex result
     cdef Float2 *cp = <Float2*>&p[0]
     cdef Float2 *a = <Float2*>&qa[0]
@@ -105,7 +105,7 @@ cpdef l_rad_c(float k, float[:] p, float[:] qa, float[:] qb, p_on_element):
     return np.complex64(result.re+result.im*1j)
 
 
-cpdef m_rad_c(float k, float[:] p, float[:] qa, float[:] qb, bool p_on_element):
+cpdef m_rad(float k, float[:] p, float[:] qa, float[:] qb, bool p_on_element):
     cdef Complex result
     cdef Float2 *cp = <Float2*>&p[0]
     cdef Float2 *a = <Float2*>&qa[0]
@@ -114,7 +114,7 @@ cpdef m_rad_c(float k, float[:] p, float[:] qa, float[:] qb, bool p_on_element):
     return np.complex64(result.re+result.im*1j)
 
 
-cpdef mt_rad_c(float k, float[:] p, float[:] vec_p, float[:] qa, float[:] qb, bool p_on_element):
+cpdef mt_rad(float k, float[:] p, float[:] vec_p, float[:] qa, float[:] qb, bool p_on_element):
     cdef Complex result
     cdef Float2 *cp = <Float2*>&p[0]
     cdef Float2 *c_normal_p = <Float2*>&vec_p[0]
@@ -124,7 +124,7 @@ cpdef mt_rad_c(float k, float[:] p, float[:] vec_p, float[:] qa, float[:] qb, bo
     return np.complex64(result.re+result.im*1j)
 
 
-cpdef n_rad_c(float k, float[:] p, float[:] vec_p, float[:] qa, float[:] qb, bool p_on_element):
+cpdef n_rad(float k, float[:] p, float[:] vec_p, float[:] qa, float[:] qb, bool p_on_element):
     cdef Complex result
     cdef Float2 *cp = <Float2*>&p[0]
     cdef Float2 *c_normal_p = <Float2*>&vec_p[0]

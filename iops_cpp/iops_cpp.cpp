@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License           *
  * along with AcousticBEM.  If not, see <http://www.gnu.org/licenses/>.        *
  * --------------------------------------------------------------------------- */
-#include "intops.h"
+#include "iops_cpp.h"
 
 #include <iostream>
 #include <cmath>
