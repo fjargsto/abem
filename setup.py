@@ -13,6 +13,10 @@ pyntops = Extension("iops_pyx",
                     sources=["iops_pyx/helmholtz_integrals.pyx"],
                     include_dirs=[numpy.get_include()])
 
+#scintops = Extension("iops_sci",
+#                    sources=["iops_sci/helmholtz_integrals.pyx"],
+#                    include_dirs=[numpy.get_include()])
+
 aprops = Extension("aprops",
                     sources=["aprops/acoustic_properties.pyx"],
                     include_dirs=[numpy.get_include()])

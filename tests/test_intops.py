@@ -4,6 +4,7 @@ from scipy.special import hankel1
 
 import iops_pyx
 import iops_cpp
+import iops_sci
 
 
 class TestComplexQuadGenerator(unittest.TestCase):
@@ -85,6 +86,8 @@ class TestComputeL_2D(unittest.TestCase):
         zP = iops_pyx.l_2d(k, p, a, b, pOnElement)
         zC = iops_cpp.l_2d(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zP, zC)
+        zS = iops_sci.l_2d(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zS)
 
     def test_compute_L_02(self):
         k = 10.0
@@ -95,6 +98,8 @@ class TestComputeL_2D(unittest.TestCase):
         zP = iops_pyx.l_2d(k, p, a, b, pOnElement)
         zC = iops_cpp.l_2d(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zP, zC)
+        zS = iops_sci.l_2d(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zS)
 
     def test_compute_L_03(self):
         k = 0.0
@@ -105,6 +110,8 @@ class TestComputeL_2D(unittest.TestCase):
         zP = iops_pyx.l_2d(k, p, a, b, pOnElement)
         zC = iops_cpp.l_2d(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zP, zC)
+        zS = iops_sci.l_2d(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zS)
 
     def test_compute_L_04(self):
         k = 10.0
@@ -115,6 +122,8 @@ class TestComputeL_2D(unittest.TestCase):
         zP = iops_pyx.l_2d(k, p, a, b, pOnElement)
         zC = iops_cpp.l_2d(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zP, zC)
+        zS = iops_sci.l_2d(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zS)
 
 
 class TestComputeM_2D(unittest.TestCase):
@@ -127,6 +136,13 @@ class TestComputeM_2D(unittest.TestCase):
         zP = iops_pyx.m_2d(k, p, a, b, pOnElement)
         zC = iops_cpp.m_2d(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zP, zC)
+        zS = iops_sci.m_2d(k, p, a, b, pOnElement)
+        # Todo: Currently produces zP == -zS. Need to determine,
+        # if the sci implementation or the old python implementation
+        # is right. In terms of code the sci implementation is
+        # a more straight forward translation of the formulae in
+        # the thesis.
+        self.assertAlmostEqual(zP, zS)
 
     def test_compute_M_02(self):
         k = 10.0
@@ -137,6 +153,8 @@ class TestComputeM_2D(unittest.TestCase):
         zP = iops_pyx.m_2d(k, p, a, b, pOnElement)
         zC = iops_cpp.m_2d(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zP, zC)
+        zS = iops_sci.m_2d(k, p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zS)
 
     def test_compute_M_03(self):
         k = 0.0
@@ -147,6 +165,10 @@ class TestComputeM_2D(unittest.TestCase):
         zP = iops_pyx.m_2d(k, p, a, b, pOnElement)
         zC = iops_cpp.m_2d(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zP, zC)
+        zS = iops_sci.m_2d(k, p, a, b, pOnElement)
+        # The following agree (despite same implementation)
+        # because expected result is 0.
+        self.assertAlmostEqual(zP, zS)
 
     def test_compute_M_04(self):
         k = 10.0
@@ -157,6 +179,10 @@ class TestComputeM_2D(unittest.TestCase):
         zP = iops_pyx.m_2d(k, p, a, b, pOnElement)
         zC = iops_cpp.m_2d(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zP, zC)
+        zS = iops_sci.m_2d(k, p, a, b, pOnElement)
+        # The following agree (despite same implementation)
+        # because expected result is 0.
+        self.assertAlmostEqual(zP, zS)
 
 
 class TestComputeMt_2D(unittest.TestCase):
@@ -170,6 +196,8 @@ class TestComputeMt_2D(unittest.TestCase):
         zP = iops_pyx.mt_2d(k, p, normal_p, a, b, pOnElement)
         zC = iops_cpp.mt_2d(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zP, zC)
+        zS = iops_sci.mt_2d(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zS)
 
     def test_compute_Mt_02(self):
         k = 10.0
@@ -181,28 +209,34 @@ class TestComputeMt_2D(unittest.TestCase):
         zP = iops_pyx.mt_2d(k, p, normal_p, a, b, pOnElement)
         zC = iops_cpp.mt_2d(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zP, zC)
+        zS = iops_sci.mt_2d(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zS)
 
     def test_compute_Mt_03(self):
         k = 0.0
         p = np.array([0.0, 0.05], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)], dtype=np.float32)
+        normal_p = np.array([-1, 0], dtype=np.float32)
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
         zP = iops_pyx.mt_2d(k, p, normal_p, a, b, pOnElement)
         zC = iops_cpp.mt_2d(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zP, zC)
+        zS = iops_sci.mt_2d(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zS, 5)
 
     def test_compute_Mt_04(self):
         k = 10.0
         p = np.array([0.0, 0.05], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)], dtype=np.float32)
+        normal_p = np.array([-1, 0], dtype=np.float32)
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
         zP = iops_pyx.mt_2d(k, p, normal_p, a, b, pOnElement)
         zC = iops_cpp.mt_2d(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zP, zC)
+        zS = iops_sci.mt_2d(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zS, 5)
 
 
 class TestComputeN_2D(unittest.TestCase):
@@ -216,6 +250,8 @@ class TestComputeN_2D(unittest.TestCase):
         zP = iops_pyx.n_2d(k, p, normal_p, a, b, pOnElement)
         zC = iops_cpp.n_2d(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zP, zC)
+        zS = iops_sci.n_2d(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zS)
 
     def test_compute_N_02(self):
         k = 10.0
@@ -227,28 +263,34 @@ class TestComputeN_2D(unittest.TestCase):
         zP = iops_pyx.n_2d(k, p, normal_p, a, b, pOnElement)
         zC = iops_cpp.n_2d(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zP, zC, 6)
+        zS = iops_sci.n_2d(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zS)
 
     def test_compute_N_03(self):
         k = 0.0
         p = np.array([0.0, 0.05], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)], dtype=np.float32)
+        normal_p = np.array([-1, 0], dtype=np.float32)
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
         zP = iops_pyx.n_2d(k, p, normal_p, a, b, pOnElement)
         zC = iops_cpp.n_2d(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zP, zC)
+        zS = iops_sci.n_2d(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zS)
 
     def test_compute_N_04(self):
         k = 10.0
         p = np.array([0.0, 0.05], dtype=np.float32)
-        normal_p = np.array([-np.sqrt(0.5), -np.sqrt(0.5)], dtype=np.float32)
+        normal_p = np.array([-1, 0], dtype=np.float32)
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
         zP = iops_pyx.n_2d(k, p, normal_p, a, b, pOnElement)
         zC = iops_cpp.n_2d(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zP, zC, 3)
+        zS = iops_sci.n_2d(k, p, normal_p, a, b, pOnElement)
+        self.assertAlmostEqual(zP, zS, 6)
 
 
 # -----------------------------------------------------------------------------
