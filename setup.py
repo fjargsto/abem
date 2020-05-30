@@ -2,40 +2,10 @@ from setuptools import setup, Extension
 from Cython.Build import cythonize
 import numpy
 
-
-intops = Extension("iops_cpp",
-                   sources=[
-                       "iops_cpp/helmholtz_integrals.pyx",
-                       "iops_cpp/iops_cpp.cpp"],
-                   language="c++",)
-
-pyntops = Extension("iops_pyx",
-                    sources=["iops_pyx/helmholtz_integrals.pyx"],
-                    include_dirs=[numpy.get_include()])
-
-#scintops = Extension("iops_sci",
-#                    sources=["iops_sci/helmholtz_integrals.pyx"],
-#                    include_dirs=[numpy.get_include()])
-
-aprops = Extension("aprops",
-                    sources=["aprops/acoustic_properties.pyx"],
-                    include_dirs=[numpy.get_include()])
-
-abounds = Extension("abounds",
-                    sources=["abounds/mesh.pyx"],
-                    include_dirs=[numpy.get_include()])
-
-solver = Extension("solver",
-                    sources=["solver/solver.pyx"],
-                    include_dirs=[numpy.get_include()])
-
-hsolvers = Extension("hsolvers",
-                    sources=["hsolvers/helmholtz_solver.pyx"],
-                    include_dirs=[numpy.get_include()])
-
-rsolvers = Extension("rsolvers",
-                    sources=["rsolvers/rayleigh_solvers.pyx"],
-                    include_dirs=[numpy.get_include()])
+extensions = [Extension("*",  sources=["src/*.pyx"], include_dirs=[numpy.get_include()],
+                        define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")]),
+              Extension("iops_cpp", sources=["iops_cpp/helmholtz_integrals.pyx", "iops_cpp/iops_cpp.cpp"],
+                        language="c++", )]
 
 
 def readme():
@@ -51,7 +21,7 @@ def requirements():
 
 setup(
     name="abem",
-    version="0.1-alpha",
+    version="0.2a1",
     description="Boundary Element Method for Acoustic Simulations",
     long_description=readme(),
     long_description_content_type="text/markdown",
@@ -62,8 +32,7 @@ setup(
     packages=["abem"],
     install_requires=requirements(),
     zip_safe=False,
-    ext_modules=cythonize([intops, pyntops, aprops, abounds, solver, hsolvers, rsolvers],
-                          include_path=["intops", "pyntops"]),
+    ext_modules=cythonize(extensions),
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     test_suite="tests",

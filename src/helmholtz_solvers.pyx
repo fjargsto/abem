@@ -1,7 +1,7 @@
 import numpy as np
 cimport numpy as np
 from solver import Solver
-from abounds import ExteriorBoundarySolution, InteriorBoundarySolution
+from acoustic_boundaries import ExteriorBoundarySolution, InteriorBoundarySolution
 #from iops_pyx import * # Cython integral operators (slow!)
 #from iops_sci import * # Scikit based integral operators (slow!)
 from iops_cpp import * # C++ integral operators

@@ -1,5 +1,5 @@
 import numpy as np
-import aprops
+import acoustic_properties
 
 # -----------------------------------------------------------------------------
 # Boundary representations
@@ -397,13 +397,13 @@ class BoundarySolution(object):
         res = "Density of medium:      {} kg/m^3\n".format(self.parent.density)
         res += "Speed of sound:         {} m/s\n".format(self.parent.c)
         res += "Wavenumber (Frequency): {} ({} Hz)\n\n".format(self.k,
-                                                               aprops.wavenumber_to_frequency(self.k))
+                                                               acoustic_properties.wavenumber_to_frequency(self.k))
         res += "index   Potential               Pressure" \
                "                 Velocity                 Intensity\n\n"
         for i in range(self.phis.size):
-            pressure = aprops.sound_pressure(self.k, self.phis[i], c=self.parent.c,
+            pressure = acoustic_properties.sound_pressure(self.k, self.phis[i], c=self.parent.c,
                                       density=self.parent.density)
-            intensity = aprops.acoustic_intensity(pressure, self.velocities[i])
+            intensity = acoustic_properties.acoustic_intensity(pressure, self.velocities[i])
             res += "{:5d}  {: 1.4e}{:+1.4e}  {: 1.4e}{:+1.4e}i  " \
                    "{: 1.4e}{:+1.4e}i  {: 1.4e}\n".format(i+1,
                                                           self.phis[i].real, self.phis[i].imag,
@@ -415,23 +415,23 @@ class BoundarySolution(object):
 
     def pressure(self, named_partition=None):
         if named_partition is None:
-            return aprops.sound_pressure(self.k, self.phis, c=self.parent.c,
+            return acoustic_properties.sound_pressure(self.k, self.phis, c=self.parent.c,
                                   density=self.parent.density)
         else:
             range = self.parent.geometry.named_partition[named_partition]
-            return aprops.sound_pressure(self.k, self.phis[range[0]: range[1]],
+            return acoustic_properties.sound_pressure(self.k, self.phis[range[0]: range[1]],
                                   c=self.parent.c, density=self.parent.density)
 
     def pressure_decibel(self, named_partition=None):
-        return aprops.sound_magnitude(self.pressure(named_partition))
+        return acoustic_properties.sound_magnitude(self.pressure(named_partition))
 
     def radiation_ratio(self):
         power = 0.0
         b_power = 0.0
         for i in range(self.phis.size):
-            pressure = aprops.sound_pressure(self.k, self.phis[i], c=self.parent.c,
+            pressure = acoustic_properties.sound_pressure(self.k, self.phis[i], c=self.parent.c,
                                       density=self.parent.density)
-            power += aprops.acoustic_intensity(pressure, self.velocities[i])
+            power += acoustic_properties.acoustic_intensity(pressure, self.velocities[i])
             b_power += (self.parent.density * self.parent.c *
                         np.abs(self.velocities[i]) ** 2)
         return 2.0 * power / b_power
@@ -494,11 +494,11 @@ class SampleSolution(object):
         result = "index   Potential                Pressure" \
                  "                 Magnitude       Phase\n\n"
         for i in range(self.phis.size):
-            pressure = aprops.sound_pressure(self.boundarySolution.k, self.phis[i],
+            pressure = acoustic_properties.sound_pressure(self.boundarySolution.k, self.phis[i],
                                       c=self.boundarySolution.parent.c,
                                       density=self.boundarySolution.parent.density)
-            magnitude = aprops.sound_magnitude(pressure)
-            phase = aprops.signal_phase(pressure)
+            magnitude = acoustic_properties.sound_magnitude(pressure)
+            phase = acoustic_properties.signal_phase(pressure)
             result += "{:5d}  {: 1.4e}{:+1.4e}i  {: 1.4e}{:+1.4e}i  {: 1.4e} dB  {: 1.4f}\n".format( \
                 i+1, self.phis[i].real, self.phis[i].imag, pressure.real, pressure.imag, magnitude, phase)
 

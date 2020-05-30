@@ -1,4 +1,4 @@
-from abounds import BoundaryCondition
+from acoustic_boundaries import BoundaryCondition
 
 
 class Solver(object):

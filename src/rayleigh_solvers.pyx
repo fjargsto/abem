@@ -1,7 +1,5 @@
 from solver import Solver
-from abounds import SampleSolution
-from abounds import RayleighBoundarySolution
-from abounds import RayleighCavityBoundarySolution
+from acoustic_boundaries import SampleSolution, RayleighBoundarySolution, RayleighCavityBoundarySolution
 from iops_pyx import * # Cython integral operators (slow!)
 # from iops_pyx import * # C++ integral operators
 import numpy as np
