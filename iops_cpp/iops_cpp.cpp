@@ -17,10 +17,13 @@
  * --------------------------------------------------------------------------- */
 #include "iops_cpp.h"
 
-#include <iostream>
-#include <cmath>
 #include <cassert>
+#include <iostream>
 
+#ifdef _MSC_VER
+inline float jnf(int order, float x) {return (float)_jn(order, (double)x);}
+inline float ynf(int order, float x) {return (float)_yn(order, (double)x);}
+#endif
 
 #define MAX_LINE_RULE_SAMPLES 4096
 
@@ -777,8 +780,8 @@ std::complex<float> complexConeIntegral(std::complex<float>(*integrand)(Float2, 
   Float2 delta = 1.0f/nSections * (end - start);
   std::complex<float> sum = 0.0f;
   for (int s = 0; s < nSections; ++s) {
-    Float2 segmentStart = start + s * delta;
-    Float2 segmentEnd   = start + (s+1) * delta;
+    Float2 segmentStart = start + static_cast<float>(s) * delta;
+    Float2 segmentEnd   = start + static_cast<float>(s+1) * delta;
     sum += complexQuad2D(integrand, state, intRule, segmentStart, segmentEnd);
   }
   return sum;
@@ -834,7 +837,7 @@ std::complex<float> computeN_RAD(float k, Float2 p, Float2 vec_p, Float2 a, Floa
       /* deal with the cone at the b-side of the generator */
       Float2 tip_b = {0.0, b.y - direction * b.x};
       state.direction = -direction;
-      nSections = (int)(b.x * sqrtf(2.0f) / lenAB) + 1;
+      nSections = static_cast<int>(b.x * sqrtf(2.0f) / lenAB) + 1;
       std::complex<float> coneValB = complexConeIntegral(integrateGeneratorN0pOn_RAD, &state, intRule, b, tip_b, nSections);
 
       return -(coneValA + coneValB);
@@ -934,7 +937,7 @@ std::complex<float> computeL_3D(float k, Float3 p, Float3 a, Float3 b, Float3 c,
 	}
 	float A = acosf((ra*ra + r0*r0 - opp*opp) / (2.0f * ra * r0));
 	float B = atanf(ra * sinf(A) / (r0 - ra * cosf(A)));
-	result += (r0 * sinf(B) * (logf(tanf(0.5f * (A + B))) - logf(tanf(0.5 * B))));
+	result += (r0 * sinf(B) * (logf(tanf(0.5f * (A + B))) - logf(tanf(0.5f * B))));
       }
       return result / (4.0f * M_PI);
     } else {
