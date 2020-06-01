@@ -27,7 +27,7 @@ setup(
     long_description_content_type="text/markdown",
     url="http://github.com/fjargsto/abem",
     author="Frank Jargstorff",
-    download_url="https://github.com/fjargsto/abem/archive/v0.1-alpha.tar.gz",
+    download_url="https://github.com/fjargsto/abem/archive/abem-0.2a2.tar.gz",
     license="GNU General Public License",
     packages=["abem", "iops_sci"],
     install_requires=requirements(),
