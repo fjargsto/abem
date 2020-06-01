@@ -1,0 +1,8 @@
+include requirements.txt
+include LICENSE
+include src/*.pyx
+include iops_cpp/helmholtz_integrals.pyx
+include iops_cpp/iops_cpp.cpp
+include iops_cpp/iops_cpp.h
+include iops_cpp/iops_cpp.pxd
+

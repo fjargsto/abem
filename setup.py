@@ -21,7 +21,7 @@ def requirements():
 
 setup(
     name="abem",
-    version="0.2a1",
+    version="0.2b2",
     description="Boundary Element Method for Acoustic Simulations",
     long_description=readme(),
     long_description_content_type="text/markdown",
@@ -29,7 +29,7 @@ setup(
     author="Frank Jargstorff",
     download_url="https://github.com/fjargsto/abem/archive/v0.1-alpha.tar.gz",
     license="GNU General Public License",
-    packages=["abem"],
+    packages=["abem", "iops_sci"],
     install_requires=requirements(),
     zip_safe=False,
     ext_modules=cythonize(extensions),
