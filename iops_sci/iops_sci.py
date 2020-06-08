@@ -138,7 +138,7 @@ def int0_m_2d(t, p, a, b):
     n_q = normal_2d(a, b)
     # the first minus sign in the next line should not be here.
     # it was added to make it agree with the existing python and C++ implementations
-    return -dgreen0_dr_2d(R) * (-np.dot(n_r, n_q)) * l
+    return dgreen0_dr_2d(R) * (-np.dot(n_r, n_q)) * l
 
 
 def m_2d(k, p, a, b, p_on_element):

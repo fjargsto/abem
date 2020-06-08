@@ -83,7 +83,7 @@ def m_2d(float k, np.ndarray p, np.ndarray qa, np.ndarray qb, bool p_on_element)
                 r = p - x
                 return np.dot(r, vecq) / np.dot(r, r)
 
-            result = -0.5 / np.pi * complex_quad_2d(func, qa, qb)
+            result = 0.5 / np.pi * complex_quad_2d(func, qa, qb)
         else:
 
             def func(x):

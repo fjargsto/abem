@@ -223,7 +223,7 @@ std::complex<float> computeM_2D(float k, Float2 p, Float2 a, Float2 b, bool pOnE
     return 0.0;
   } else {
     if (k == 0.0f) {
-      return static_cast<float>(-0.5f * M_1_PI) * complexQuad2D(intM1_2D, &stat, intRule, a, b);
+      return static_cast<float>(0.5f * M_1_PI) * complexQuad2D(intM1_2D, &stat, intRule, a, b);
     } else {
       return 0.25f * 1if * k * complexQuad2D(intM2_2D, &stat, intRule, a, b);
     }
