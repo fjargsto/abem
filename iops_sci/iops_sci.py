@@ -1,18 +1,18 @@
 import numpy as np
-#cimport numpy as np
+# cimport numpy as np
 from numpy.linalg import norm
 from scipy.special import hankel1, expi
 from scipy.integrate import quad, fixed_quad
 
 
-#cdef extern from "stdbool.h":
+# cdef extern from "stdbool.h":
 #    ctypedef bint bool
 
 
 def normal_2d(a, b):
     diff = a - b
     length = norm(diff)
-    return np.array([diff[1]/length, -diff[0]/length])
+    return np.array([diff[1] / length, -diff[0] / length])
 
 
 def normal_3d(a, b, c):
@@ -56,59 +56,26 @@ def iterable_t(func, t_list):
 
 
 def fixed_quad_complex(func, a, b):
-    gauss_order = 16
+    gauss_order = 8
     re = fixed_quad(lambda t: np.real(iterable_t(func, t)), a, b, n=gauss_order)
     im = fixed_quad(lambda t: np.imag(iterable_t(func, t)), a, b, n=gauss_order)
     return re[0] + 1j * im[0]
 
 
-def green_2d(k, r):
-    return 0.25j * hankel1(0, k * r)
-
-def green0_2d(r):
-    return -0.5 / np.pi * np.log(r)
-
 def lerp(t, a, b):
     return a + t * (b - a)
-
-def int_l_2d(t, k, p, a, b):
-    q = lerp(t, a, b)
-    r = norm(p - q)
-    l = norm(a - b)
-    return green_2d(k, r) * l
-
-def int0_l_2d(t, p, a, b):
-    q = lerp(t, a, b)
-    r = norm(p - q)
-    l = norm(a - b)
-    return green0_2d(r) * l
-
-def int_on_l_2d(t, k, p, a, b):
-    q = lerp(t, a, b)
-    r = norm(p - q)
-    l = norm(a - b)
-    return (0.5 / np.pi * np.log(r) + 0.25j * hankel1(0, k * r)) * l
 
 
 # -----------------------------------------------------------------------------
 # 2D
 # -----------------------------------------------------------------------------
-def l_2d(k, p, a, b, p_on_element):
-    if p_on_element:
-        if k == 0.0:
-            l = norm(a - b)
-            return 0.5 / np.pi * l * (1.0 - np.log(0.5 * l))
-        else:
-            result = fixed_quad_complex(lambda t: int_on_l_2d(t, k, p, a, p), 0, 1) \
-                     + fixed_quad_complex(lambda t: int_on_l_2d(t, k, p, p, b), 0, 1) \
-                     + l_2d(0.0, p, a, b, True)
-    else:
-        if k == 0.0:
-            result = fixed_quad_complex(lambda t: int0_l_2d(t, p, a, b), 0, 1)
-        else:
-            result = fixed_quad_complex(lambda t: int_l_2d(t, k, p, a, b), 0, 1)
+# Green's functions
+def green_2d(k, r):
+    return 0.25j * hankel1(0, k * r)
 
-    return result
+
+def green0_2d(r):
+    return -0.5 / np.pi * np.log(r)
 
 
 def dgreen_dr_2d(k, r):
@@ -119,14 +86,82 @@ def dgreen0_dr_2d(r):
     return -0.5 / (np.pi * r)
 
 
+def d2green_dr2_2d(k, r):
+    result = 0.25j * k ** 2 * (hankel1(1, k * r) / (k * r) - hankel1(0, k * r))
+    return result
+
+
+def d2green0_dr2_2d(r):
+    return 0.5 / (np.pi * r ** 2)
+
+
+# -----------------------------------------------------------------------------
+# integral operators
+def l_2d_on_k0(a, b):
+    l = norm(a - b)
+    return 0.5 / np.pi * l * (1.0 - np.log(0.5 * l))
+
+
+def int_on_l_2d(t, k, p, a, b):
+    q = lerp(t, a, b)
+    r = norm(p - q)
+    return 0.5 / np.pi * np.log(r) + 0.25j * hankel1(0, k * r)
+
+
+def l_2d_on(k, p, a, b):
+    l = norm(a - b)
+    return (fixed_quad_complex(lambda t: int_on_l_2d(t, k, p, a, p), 0, 1) +
+            fixed_quad_complex(lambda t: int_on_l_2d(t, k, p, p, b), 0, 1)) * 0.5 * l + \
+            l_2d_on_k0(a, b)
+
+
+def int0_l_2d(t, p, a, b):
+    q = lerp(t, a, b)
+    r = norm(p - q)
+    return green0_2d(r)
+
+
+def l_2d_off_k0(p, a, b):
+    l = norm(a - b)
+    return fixed_quad_complex(lambda t: int0_l_2d(t, p, a, b), 0, 1) * l
+
+
+def int_l_2d(t, k, p, a, b):
+    q = lerp(t, a, b)
+    r = norm(p - q)
+    return green_2d(k, r)
+
+
+def l_2d_off(k, p, a, b):
+    l = norm(a - b)
+    return fixed_quad_complex(lambda t: int_l_2d(t, k, p, a, b), 0, 1) * l
+
+
+def l_2d(k, p, a, b, p_on_element):
+    if p_on_element:
+        if k == 0.0:
+            return l_2d_on_k0(a, b)
+        else:
+            return l_2d_on(k, p, a, b)
+    else:
+        if k == 0.0:
+            return l_2d_off_k0(p, a, b)
+        else:
+            return l_2d_off(k, p, a, b)
+
+
 def int_m_2d(t, k, p, a, b):
     q = lerp(t, a, b)
     r = p - q
     R = norm(r)
     n_r = r / R
-    l = norm(a - b)
     n_q = normal_2d(a, b)
-    return dgreen_dr_2d(k, R) * (-np.dot(n_r, n_q)) * l
+    return dgreen_dr_2d(k, R) * (-np.dot(n_r, n_q))
+
+
+def m_2d_off_k0(p, a, b):
+    l = norm(a - b)
+    return fixed_quad_complex(lambda t: int0_m_2d(t, p, a, b), 0, 1) * l
 
 
 def int0_m_2d(t, p, a, b):
@@ -134,28 +169,28 @@ def int0_m_2d(t, p, a, b):
     r = p - q
     R = norm(r)
     n_r = r / R
-    l = norm(a - b)
     n_q = normal_2d(a, b)
-    # the first minus sign in the next line should not be here.
-    # it was added to make it agree with the existing python and C++ implementations
-    return dgreen0_dr_2d(R) * (-np.dot(n_r, n_q)) * l
+    return dgreen0_dr_2d(R) * (-np.dot(n_r, n_q))
+
+
+def m_2d_off(k, p, a, b):
+    l = norm(a - b)
+    return fixed_quad_complex(lambda t: int_m_2d(t, k, p, a, b), 0, 1) * l
 
 
 def m_2d(k, p, a, b, p_on_element):
     if p_on_element:
         if k == 0.0:
-            result = fixed_quad_complex(lambda t: int0_m_2d(t, p, a, p), 0, 1)\
-                     + fixed_quad_complex(lambda t: int0_m_2d(t, p, p, b), 0, 1)
+            # optimization because dot(n_r, n_q) == 0
+            return 0 + 0j
         else:
-            result = fixed_quad_complex(lambda t: int_m_2d(t, k, p, a, p), 0, 1)\
-                     + fixed_quad_complex(lambda t: int_m_2d(t, k, p, p, b), 0, 1)
+            # optimization because dot(n_r, n_q) == 0
+            return 0 + 0j
     else:
         if k == 0.0:
-            result = fixed_quad_complex(lambda t: int0_m_2d(t, p, a, b), 0, 1)
+            return m_2d_off_k0(p, a, b)
         else:
-            result = fixed_quad_complex(lambda t: int_m_2d(t, k, p, a, b), 0, 1)
-
-    return result
+            return m_2d_off(k, p, a, b)
 
 
 def int_mt_2d(t, k, p, n_p, a, b):
@@ -163,8 +198,12 @@ def int_mt_2d(t, k, p, n_p, a, b):
     r = p - q
     R = norm(r)
     n_r = r / R
+    return dgreen_dr_2d(k, R) * np.dot(n_r, n_p)
+
+
+def mt_2d_off(k, p, n_p, a, b):
     l = norm(a - b)
-    return dgreen_dr_2d(k, R) * np.dot(n_r, n_p) * l
+    return fixed_quad_complex(lambda t: int_mt_2d(t, k, p, n_p, a, b), 0, 1) * l
 
 
 def int0_mt_2d(t, p, n_p, a, b):
@@ -172,34 +211,74 @@ def int0_mt_2d(t, p, n_p, a, b):
     r = p - q
     R = norm(r)
     n_r = r / R
+    return dgreen0_dr_2d(R) * np.dot(n_r, n_p)
+
+
+def mt_2d_off_k0(p, n_p, a, b):
     l = norm(a - b)
-    return dgreen0_dr_2d(R) * np.dot(n_r, n_p) * l
+    return fixed_quad_complex(lambda t: int0_mt_2d(t, p, n_p, a, b), 0, 1) * l
 
 
 def mt_2d(k, p, n_p, a, b, p_on_element):
     if p_on_element:
         if k == 0.0:
-            result = complex_quad_2d(lambda t: int0_mt_2d(t, p, n_p, a, p), 0, 1)\
-                     + complex_quad_2d(lambda t: int0_mt_2d(t, p, n_p, p, b), 0, 1)
+            # optimization because dot(n_r, n_p) == 0
+            result = 0 + 0j
         else:
-            result = complex_quad_2d(lambda t: int_mt_2d(t, k, p, n_p, a, p), 0, 1)\
-                     + complex_quad_2d(lambda t: int_mt_2d(t, k, p, n_p, p, b), 0, 1)
+            # optimization because dot(n_r, n_p) == 0
+            result = 0 + 0j
     else:
         if k == 0.0:
-            result = complex_quad_2d(lambda t: int0_mt_2d(t, p, n_p, a, b), 0, 1)
+            return mt_2d_off_k0(p, n_p, a, b)
         else:
-            result = complex_quad_2d(lambda t: int_mt_2d(t, k, p, n_p, a, b), 0, 1)
+            return mt_2d_off(k, p, n_p, a, b)
 
     return result
 
 
-def d2green_dr2_2d(k, r):
-    result = 0.25j * k**2 * (hankel1(1, k * r) / (k * r) - hankel1(0, k * r))
-    return result
+def n_2d_on_k0(a, b):
+    return -2.0 / (np.pi * norm(a - b))
 
 
-def d2green0_dr2_2d(r):
-    return 0.5 / (np.pi * r**2)
+def int_on_n_2d(t_list, k, p, n_p, a, b):
+    q = lerp(t_list, a, b)
+    r = p - q
+    R2 = np.dot(r, r)
+    R = np.sqrt(R2)
+#   the following commented lines are a consequence of dot(n_r, n_p) == 0
+#   because q and p lie on the same line (spanned by a and b).
+#   n_r = r / R
+#   n_q = normal_2d(a, b)
+    z0 = 0.25j * k / R * hankel1(1, k * R) - 0.5 / (np.pi * R2)
+    # z1 = 0.50j * k / R * hankel1(1, k * R) - 0.25j * k * k * hankel1(0, k * R) - 1.0 / (np.pi * R2)
+    z2 = -0.25 * k * k * np.log(R) / np.pi
+    return (z0 + z2)
+#   return (  z0 #* np.dot(n_p, n_q)
+#            + z1 * np.dot(n_r, n_p) * (-np.dot(n_r, n_q))
+#            + z2) * l
+
+
+def n_2d_on(k, p, n_p, a, b):
+    l = norm(a - b)
+    integral = (fixed_quad_complex(lambda t: int_on_n_2d(t, k, p, n_p, a, p), 0, 1) +
+                fixed_quad_complex(lambda t: int_on_n_2d(t, k, p, n_p, p, b), 0, 1)) * 0.5 * l
+    n_0 = n_2d_on_k0(a, b)
+    l_0 = -0.5 * k * k * l_2d_on_k0(a, b)
+    return integral + (n_0 + l_0)
+
+
+def int0_n_2d(t, p, n_p, a, b):
+    q = lerp(t, a, b)
+    r = p - q
+    R = norm(r)
+    n_r = r / R
+    n_q = normal_2d(a, b)
+    return 0.5 / (np.pi * np.dot(r, r)) * (np.dot(n_p, n_q) - 2.0 * np.dot(n_r, n_p) * np.dot(n_r, n_q))
+
+
+def n_2d_off_k0(p, n_p, a, b):
+    l = norm(a - b)
+    return fixed_quad_complex(lambda t: int0_n_2d(t, p, n_p, a, b), 0, 1) * l
 
 
 def d2r_dn_p_dn_q_2d(r, n_r, n_p, n_q):
@@ -211,74 +290,28 @@ def int_n_2d(t, k, p, n_p, a, b):
     r = p - q
     R = norm(r)
     n_r = r / R
-    l = norm(a - b)
     n_q = normal_2d(a, b)
     return (dgreen_dr_2d(k, R) * d2r_dn_p_dn_q_2d(R, n_r, n_p, n_q)
-            + d2green_dr2_2d(k, R) * np.dot(n_r, n_p) * (-np.dot(n_r, n_q))) * l
+            + d2green_dr2_2d(k, R) * np.dot(n_r, n_p) * (-np.dot(n_r, n_q)))
 
 
-def int0_n_2d(t, p, n_p, a, b):
-    q = lerp(t, a, b)
-    r = p - q
-    R = norm(r)
+def n_2d_off(k, p, n_p, a, b):
     l = norm(a - b)
-    n_r = r / R
-    n_q = normal_2d(a, b)
-    return 0.5 / (np.pi * np.dot(r, r)) * (np.dot(n_p, n_q) - 2.0 * np.dot(n_r, n_p) * np.dot(n_r, n_q)) * l
-
-
-def int_on_n_2d(t_list, k, p, n_p, a, b):
-    if type(t_list) == np.ndarray:
-        result = []
-        for t in t_list:
-            q = lerp(t, a, b)
-            r = p - q
-            R2 = np.dot(r, r)
-            R = np.sqrt(R2)
-            l = norm(a - b)
-            n_r = r / R
-            n_q = normal_2d(a, b)
-            z0 = 0.25j * k / R * hankel1(1, k * R) - 0.5 / (np.pi * R2)
-            z1 = 0.50j * k / R * hankel1(1, k * R) - 0.25j * k**2 * hankel1(0, k * R) - 1.0 / (np.pi * R2)
-            z2 = -0.25 * k**2 * np.log(R) / np.pi
-            result.append( (z0 + z2) * l)
-        return result
-    else:
-        q = lerp(t_list, a, b)
-        r = p - q
-        R2 = np.dot(r, r)
-        R = np.sqrt(R2)
-        l = norm(a - b)
-        n_r = r / R
-        n_q = normal_2d(a, b)
-        z0 = 0.25j * k / R * hankel1(1, k * R) - 0.5 / (np.pi * R2)
-        z1 = 0.50j * k / R * hankel1(1, k * R) - 0.25j * k*k * hankel1(0, k * R) - 1.0 / (np.pi * R2)
-        z2 = -0.25 * k*k * np.log(R) / np.pi
-        return (z0 + z2) * l
-
-#    return (  z0 #* np.dot(n_p, n_q)
-#             + z1 * np.dot(n_r, n_p) * (-np.dot(n_r, n_q))
-#            + z2) * l
+    return fixed_quad_complex(lambda t: int_n_2d(t, k, p, n_p, a, b), 0, 1) * l
 
 
 def n_2d(k, p, n_p, a, b, p_on_element):
     if p_on_element:
         if k == 0.0:
-            result = -2.0 / (np.pi * norm(a - b))
+            return n_2d_on_k0(a, b)
         else:
-            integral = complex_quad_2d(lambda t: int_on_n_2d(t, k, p, n_p, a, p), 0, 1)\
-                       + complex_quad_2d(lambda t: int_on_n_2d(t, k, p, n_p, p, b), 0, 1)
-            n_0 = n_2d(0.0, p, n_p, a, b, True)
-            l_0 = -0.5 * k*k * l_2d(0.0, p, a, b, True)
-
-            result = integral + n_0 + l_0
+            return n_2d_on(k, p, n_p, a, b)
     else:
         if k == 0.0:
-            result = complex_quad_2d(lambda t: int0_n_2d(t, p, n_p, a, b), 0, 1)
+            return n_2d_off_k0(p, n_p, a, b)
         else:
-            result = complex_quad_2d(lambda t: int_n_2d(t, k, p, n_p, a, b), 0, 1)
+            return n_2d_off(k, p, n_p, a, b)
 
-    return result
 
 # -----------------------------------------------------------------------------
 # 3D
@@ -320,13 +353,13 @@ def l_3d(k, p, qa, qb, qc, p_on_element):
                 opp = aopp[i]
                 if r0 < ra:
                     ra, r0 = r0, ra
-                sr0 = r0**2
-                sra = ra**2
-                sopp = opp**2
+                sr0 = r0 ** 2
+                sra = ra ** 2
+                sopp = opp ** 2
                 A = np.arccos((sra + sr0 - sopp) / (2.0 * ra * r0))
-                B = np.arctan(ra*np.sin(A) / (r0 - ra*np.cos(A)))
-                result += (r0*np.sin(B)*(np.log(np.tan(0.5*(B+A)))
-                                         - np.log(np.tan(0.5*B))))
+                B = np.arctan(ra * np.sin(A) / (r0 - ra * np.cos(A)))
+                result += (r0 * np.sin(B) * (np.log(np.tan(0.5 * (B + A)))
+                                             - np.log(np.tan(0.5 * B))))
             return result / (4.0 * np.pi)
         else:
             def func(x):
@@ -334,6 +367,7 @@ def l_3d(k, p, qa, qb, qc, p_on_element):
                 R = norm(r)
                 ikr = 1j * k * R
                 return (np.exp(ikr) - 1.0) / R
+
             L0 = l_3d(0.0, p, qa, qb, qc, True)
             Lk = complex_quad_3d(func, qa, qb, p) + complex_quad_3d(func, qb, qc, p) \
                  + complex_quad_3d(func, qc, qa, p)
@@ -344,6 +378,7 @@ def l_3d(k, p, qa, qb, qc, p_on_element):
                 r = p - x
                 R = norm(r)
                 return 1.0 / R
+
             return complex_quad_3d(func, qa, qb, qc) / (4.0 * np.pi)
         else:
             def func(x):
@@ -351,6 +386,7 @@ def l_3d(k, p, qa, qb, qc, p_on_element):
                 R = norm(r)
                 ikr = 1j * k * R
                 return np.exp(ikr) / R
+
             return complex_quad_3d(func, qa, qb, qc) / (4.0 * np.pi)
 
 
@@ -364,6 +400,7 @@ def m_3d(k, p, qa, qb, qc, p_on_element):
                 R = norm(r)
                 rnq = -np.dot(r, normal_3d(qa, qb, qc)) / R
                 return -1.0 / np.dot(r, r) * rnq
+
             return complex_quad_3d(func, qa, qb, qc) / (4.0 * np.pi)
         else:
             def func(x):
@@ -373,6 +410,7 @@ def m_3d(k, p, qa, qb, qc, p_on_element):
                 kr = k * R
                 ikr = 1j * kr
                 return rnq * (ikr - 1.0) * np.exp(ikr) / np.dot(r, r)
+
             return complex_quad_3d(func, qa, qb, qc) / (4.0 * np.pi)
 
 
@@ -386,6 +424,7 @@ def mt_3d(k, p, vecp, qa, qb, qc, p_on_element):
                 R = norm(r)
                 rnp = np.dot(r, vecp) / R
                 return -1.0 / np.dot(r, r) * rnp
+
             return complex_quad_3d(func, qa, qb, qc) / (4.0 * np.pi)
         else:
             def func(x):
@@ -394,6 +433,7 @@ def mt_3d(k, p, vecp, qa, qb, qc, p_on_element):
                 rnp = np.dot(r, vecp) / R
                 ikr = 1j * k * R
                 return rnp * (ikr - 1.0) * np.exp(ikr) / np.dot(r, r)
+
             return complex_quad_3d(func, qa, qb, qc) / (4.0 * np.pi)
 
 
@@ -416,12 +456,12 @@ def n_3d(k, p, vecp, qa, qb, qc, p_on_element):
                 opp = aopp[i]
                 if r0 < ra:
                     ra, r0 = r0, ra
-                sr0 = r0**2
-                sra = ra**2
-                sopp = opp**2
+                sr0 = r0 ** 2
+                sra = ra ** 2
+                sopp = opp ** 2
                 A = np.arccos((sra + sr0 - sopp) / (2.0 * ra * r0))
-                B = np.arctan(ra*np.sin(A) / (r0 - ra*np.cos(A)))
-                result += (np.cos(B+A) - np.cos(B)) / (r0 * np.sin(B))
+                B = np.arctan(ra * np.sin(A) / (r0 - ra * np.cos(A)))
+                result += (np.cos(B + A) - np.cos(B)) / (r0 * np.sin(B))
             return result / (4.0 * np.pi)
         else:
             def func(x):
@@ -439,13 +479,14 @@ def n_3d(k, p, vecp, qa, qb, qc, p_on_element):
                 ikr = 1j * kr
                 fpg = 1.0 / R
                 fpgr = ((ikr - 1.0) * np.exp(ikr) + 1.0) / np.dot(r, r)
-                fpgrr = (np.exp(ikr) * (2.0 - 2.0*ikr - kr*kr) - 2.0) / (R * np.dot(r, r))
+                fpgrr = (np.exp(ikr) * (2.0 - 2.0 * ikr - kr * kr) - 2.0) / (R * np.dot(r, r))
 
-                return fpgr * rnpnq + fpgrr * rnprnq + (0.5*k*k) * fpg
+                return fpgr * rnpnq + fpgrr * rnprnq + (0.5 * k * k) * fpg
+
             N0 = n_3d(0.0, p, vecp, qa, qb, qc, True)
             L0 = l_3d(0.0, p, qa, qb, qc, True)
             Nk = complex_quad_3d(func, qa, qb, p) + complex_quad_3d(func, qb, qc, p) + complex_quad_3d(func, qc, qa, p)
-            return N0 - (0.5*k*k) * L0 + Nk / (4.0 * np.pi)
+            return N0 - (0.5 * k * k) * L0 + Nk / (4.0 * np.pi)
     else:
         if k == 0.0:
             return 0.0
@@ -464,7 +505,7 @@ def n_3d(k, p, vecp, qa, qb, qc, p_on_element):
                 kr = k * R
                 ikr = 1j * kr
                 fpgr = (ikr - 1.0) * np.exp(ikr) / np.dot(r, r)
-                fpgrr = np.exp(ikr) * (2.0 - 2.0*ikr - kr*kr) / (R * np.dot(r, r))
+                fpgrr = np.exp(ikr) * (2.0 - 2.0 * ikr - kr * kr) / (R * np.dot(r, r))
 
                 return fpgr * rnpnq + fpgrr * rnprnq
 
@@ -526,13 +567,13 @@ def complex_quad_generator(func, start, end):
     vec = end - start
     sum = 0.0
     for n in range(samples.shape[0]):
-        x = start + samples[n, 0]**2 * vec
+        x = start + samples[n, 0] ** 2 * vec
         sum += samples[n, 1] * func(x) * samples[n, 0]
 
     return 2.0 * sum * norm(vec)
 
 
-def complex_quad_cone(func, start, end, segments = 1):
+def complex_quad_cone(func, start, end, segments=1):
     delta = 1.0 / segments * (end - start)
     sum = 0.0
     for s in range(segments):
@@ -658,7 +699,7 @@ def m_rad(k, p, qa, qb, p_on_element):
                 vec_q3 = np.array([vec_q[0] * x[0], vec_q[0] * x[1], vec_q[1]], dtype=np.float32)
                 rr = q3 - p3
                 RR = norm(rr)
-                return (1j * k * RR - 1.0) * np.exp(1j * k * RR) * np.dot(rr, vec_q3) / (RR *  np.dot(rr, rr))
+                return (1j * k * RR - 1.0) * np.exp(1j * k * RR) * np.dot(rr, vec_q3) / (RR * np.dot(rr, rr))
 
             return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
@@ -708,7 +749,7 @@ def mt_rad(k, p, vecp, qa, qb, p_on_element):
                 rr = q3 - p3
                 RR = norm(rr)
                 dotRnP = vecp[0] * rr[0] + vecp[1] * rr[2]
-                return -(1j * k * RR - 1.0) * np.exp(1j * k * RR) * dotRnP / (RR *  np.dot(rr, rr))
+                return -(1j * k * RR - 1.0) * np.exp(1j * k * RR) * dotRnP / (RR * np.dot(rr, rr))
 
             return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
@@ -730,6 +771,7 @@ def n_rad(k, p, vecp, qa, qb, p_on_element):
     if p_on_element:
         if k == 0.0:
             vecp3 = np.array([vecp[0], 0.0, vecp[1]], dtype=np.float32)
+
             def coneFunc(x, direction):
                 circle = CircularIntegratorPi(nSections)
                 r = x[0]
@@ -789,16 +831,16 @@ def n_rad(k, p, vecp, qa, qb, p_on_element):
                     FPG0 = 1.0 / RR
                     FPGR = np.exp(IKR) / np.dot(rr, rr) * (IKR - 1.0)
                     FPGR0 = -1.0 / np.dot(rr, rr)
-                    FPGRR = np.exp(IKR) * (2.0 - 2.0 * IKR - (k*RR)**2) / (RR * np.dot(rr, rr))
+                    FPGRR = np.exp(IKR) * (2.0 - 2.0 * IKR - (k * RR) ** 2) / (RR * np.dot(rr, rr))
                     FPGRR0 = 2.0 / (RR * np.dot(rr, rr))
                     return (FPGR - FPGR0) * RNPNQ + (FPGRR - FPGRR0) * RNPRNQ \
-                        + k**2 * FPG0 / 2.0
+                           + k ** 2 * FPG0 / 2.0
 
                 return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
             return n_rad(0.0, p, vecp, qa, qb, True) \
-                - k ** 2 * l_rad(0.0, p, qa, qb, True) / 2.0 \
-                + complex_quad_2d(generatorFunc, qa, p) + complex_quad_2d(generatorFunc, p, qb)
+                   - k ** 2 * l_rad(0.0, p, qa, qb, True) / 2.0 \
+                   + complex_quad_2d(generatorFunc, qa, p) + complex_quad_2d(generatorFunc, p, qb)
 
     else:
         if k == 0.0:
@@ -825,7 +867,7 @@ def n_rad(k, p, vecp, qa, qb, p_on_element):
 
                 return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
-            return 0.0 # complex_quad_2d(generatorFunc, qa, qb)
+            return 0.0  # complex_quad_2d(generatorFunc, qa, qb)
         else:
             def generatorFunc(x):
                 circle = CircularIntegratorPi(nSections)
@@ -845,7 +887,7 @@ def n_rad(k, p, vecp, qa, qb, p_on_element):
                     RNPNQ = -(DNPNQ + RNPRNQ) / RR
                     IKR = 1j * k * RR
                     FPGR = np.exp(IKR) / np.dot(rr, rr) * (IKR - 1.0)
-                    FPGRR = np.exp(IKR) * (2.0 - 2.0 * IKR - (k*RR)**2) / (RR * np.dot(rr, rr))
+                    FPGRR = np.exp(IKR) * (2.0 - 2.0 * IKR - (k * RR) ** 2) / (RR * np.dot(rr, rr))
                     return FPGR * RNPNQ + FPGRR * RNPRNQ
 
                 return circle.integrate(circleFunc) * r / (2.0 * np.pi)
