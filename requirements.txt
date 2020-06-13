@@ -1,3 +1,7 @@
 numpy
 scipy
 Cython
+
+setuptools
+abem
+tabulate
