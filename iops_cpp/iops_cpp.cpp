@@ -55,25 +55,71 @@ void Hankel1(int order, float x, Complex * pz) {
   pz->im = z.imag();
 }
 
-std::complex<float> complexQuad2D(std::complex<float> (*integrand)(Float2, void*), void * state, IntRule1D intRule,
-			    Float2 start, Float2 end) {
+struct GaussLegendre8
+{
+  static const unsigned int N = 4;
+  static const constexpr float x[] = {0.18343464249600006f, 0.5255324099159999f, 0.796666477414f, 0.960289856498f  };
+  static const constexpr float w[] = {0.362683783378f,      0.313706645878f,     0.222381034454f, 0.10122853629038f};
+};
+
+const unsigned int    GaussLegendre8::N;
+const constexpr float GaussLegendre8::x[];
+const constexpr float GaussLegendre8::w[];
+
+struct GaussLegendre10
+{
+  static const unsigned int N = 5;
+  static const constexpr float x[] = {0.1488743389, 0.4333953941, 0.6794095682, 0.8650633666, 0.9739065285};
+  static const constexpr float w[] = {0.2955242247, 0.2692667193, 0.2190863625, 0.1494513491, 0.0666713443};
+};
+
+const unsigned int    GaussLegendre10::N;
+const constexpr float GaussLegendre10::x[];
+const constexpr float GaussLegendre10::w[];
+
+template<typename W>
+class GaussianQuadrature
+{
+public:
+  template<class F> // a functor: R -> C
+  std::complex<float> operator()(F func, float a, float b) {
+    const float xm = 0.5f * (b + a);
+    const float xr = 0.5f * (b - a);
+    std::complex<float> sum = 0.0f + 0.0fj;
+    for (unsigned int j = 0; j < W::N; ++j) {
+      const float dx = xr * W::x[j];
+      sum += W::w[j] * (func(xm + dx) + func(xm - dx));
+    }
+    return sum *= xr;
+  }
+};
+
+Float2 lerp(float t, const Float2 &a, const Float2 &b) {
+  return a + t * (b - a);
+}
+
+std::complex<float> complexQuad2D(std::complex<float> (*integrand)(const Float2*, void*), void * state, IntRule1D intRule,
+			    const Float2 *p_start, const Float2 *p_end) {
   Float2 vec;
-  vec = end - start;
+  vec = *p_end - *p_start;
   std::complex<float> sum = 0.0f;
-  for (int i = 0; i < intRule.nSamples; ++i)
-    sum += intRule.pW[i] * integrand(intRule.pX[i] * vec + start, state);
+  for (int i = 0; i < intRule.nSamples; ++i) {
+    Float2 x = intRule.pX[i] * vec + *p_start;
+    sum += intRule.pW[i] * integrand(&x, state);
+  }
 
   return norm(vec) * sum;
 }
 
-std::complex<float> complexQuadGenerator(std::complex<float> (*integrand)(Float2, void*), void * state, IntRule1D intRule,
+std::complex<float> complexQuadGenerator(std::complex<float> (*integrand)(const Float2*, void*), void * state, IntRule1D intRule,
 				   Float2 start, Float2 end) {
   Float2 vec;
   vec = end - start;
   std::complex<float> sum = 0.0f;
   for (int i = 0; i < intRule.nSamples; ++i) {
     float x_sqr = intRule.pX[i] * intRule.pX[i];
-    sum += intRule.pW[i] * integrand(x_sqr * vec + start, state) * intRule.pX[i];
+    Float2 x = x_sqr * vec + start;
+    sum += intRule.pW[i] * integrand(&x, state) * intRule.pX[i];
   }
   return norm(vec) * sum * 2.0f;
 }
@@ -117,244 +163,523 @@ std::complex<float> complexLineIntegral(std::complex<float> (*integrand)(Float2,
 /*                       2D discrete Helmholtz operators.                      */
 /* --------------------------------------------------------------------------- */
 
+// -----------------------------------------------------------------------------
+// Green's functions
+//
+std::complex<float> green_2d(float k, float r) {
+  return 0.25f * 1if * hankel1(0, k * r);
+}
+
+float green0_2d(float r) {
+  return -0.5f * M_1_PI * log(r);
+}
+
+std::complex<float> dgreen_dr_2d(float k, float r) {
+  return -0.25if * k * hankel1(1, k * r);
+}
+
+float dgreen0_dr_2d(float r) {
+  return -0.5f * M_1_PI / r;
+}
+
 typedef struct {
   float k;
-  Float2 p;
-  Float2 normal_p;
-  Float2 normal_q;
+  const Float2 *pp;
+  const Float2 *p_normal_p;
+  const Float2 *p_normal_q;
 } IntL;
 
-std::complex<float> intL1_2D(Float2 x, void* state) {
-  IntL * s = (IntL *) state;
-  float R = norm(s->p - x);
-  return static_cast<float>(0.5f * M_1_PI * logf(R)) + 0.25f * 1if * hankel1(0, s->k * R);
+std::complex<float> l_2d_on_k0(const Float2 *pa, const Float2 *pb) {
+  float l = norm(*pb - *pa);
+
+  return 0.5f * M_1_PI * l * (1.0f - logf(0.5f * l));
 }
 
-std::complex<float> intL2_2D(Float2 x, void* state) {
-  IntL * s = (IntL *) state;
-  float R = norm(s->p - x);
-  return logf(R);
-}
+void L_2D_ON_K0(const Float2 *pa, const Float2 *pb, Complex * pResult) {
+  std::complex<float> z;
 
-std::complex<float> intL3_2D(Float2 x, void* state) {
-  IntL * s = (IntL *) state;
-  float R = norm(s->p - x);
-  return hankel1(0, s->k * R);
-}
-
-/* Computes elements of the Helmholtz L-Operator for 2D.
- *
- * Parameters:
- *   k - the wavenumber of the problem.
- *   px, py - the point receiving radiation from the boundary.
- *   ax, ay - the starting point of the boundary element being integrated over.
- *   bx, by - the end point of the bondary element being integrated over.
- *   pOnElement - a boolean indicating if p is on the boundary element being integrated.
- *
- *   Returns:
- *     The results of the integration, which are typically a complex
- *     number are stored in those two floats, the first being the Real-, the
- *     second being the Imaginary component of that complex value.
- */
-std::complex<float> computeL_2D(float k, Float2 p, Float2 a, Float2 b, bool pOnElement) {
-  IntL stat = {k, p};
-  IntRule1D intRule = {8, aX_1D, aW_1D};
-
-  Float2 ab = b - a;
-  if (pOnElement) {
-    if (k == 0.0f) {
-      float RA = norm(p - a);
-      float RB = norm(p - b);
-      float RAB = norm(ab);
-      return 0.5f * M_1_PI * (RAB - (RA * logf(RA) + RB * logf(RB)));
-    } else {
-      return complexQuad2D(intL1_2D, &stat, intRule, a, p) + complexQuad2D(intL1_2D, &stat, intRule, p, b)
-	+ computeL_2D(0, p, a, b, true);
-    }
-  } else {
-    if (k == 0.0f) {
-      return static_cast<float>(-0.5f * M_1_PI) * complexQuad2D(intL2_2D, &stat, intRule, a, b);
-    } else {
-      return 0.25f * 1if * complexQuad2D(intL3_2D, &stat, intRule, a, b);
-    }
-  }
-}
-
-void ComputeL_2D(float k, Float2 p, Float2 a, Float2 b, bool pOnElement, Complex * pResult) {
-  std::complex<float> z = computeL_2D(k, p, a, b, pOnElement);
+  z = l_2d_on_k0(pa, pb);
+  
   pResult->re = z.real();
   pResult->im = z.imag();
 }
 
+class IntL2d_on
+{
+public:
+  IntL2d_on(const float k, const Float2 *pp, const Float2 *pa, const Float2 *pb): k_(k)
+										, pp_(pp)
+										, pa_(pa)
+										, pb_(pb)
+  { ; }
 
-std::complex<float> intM1_2D(Float2 x, void* state) {
-  IntL * s = (IntL *) state;
-  Float2 r = s->p - x;
-  return dot(r, s->normal_q) / dot(r, r);
+  std::complex<float> operator()(float t) {
+    Float2 q = lerp(t, *pa_, *pb_);
+    float r = norm(*pp_ - q);
+
+    return static_cast<float>(0.5f * M_1_PI * logf(r)) + 0.25f * 1if * hankel1(0.0f, k_ * r);
+  }
+
+private:
+  const float k_;
+  const Float2 *pp_;
+  const Float2 *pa_;
+  const Float2 *pb_;
+};
+
+std::complex<float> l_2d_on(float k, const Float2 *pp, const Float2 *pa, const Float2 *pb) {
+  GaussianQuadrature<GaussLegendre8> integrate;
+  float l = norm(*pa - *pb);
+  
+  return (integrate(IntL2d_on(k, pp, pa, pp), 0.0f, 1.0f) + integrate(IntL2d_on(k, pp, pp, pb), 0.0f, 1.0f)) * 0.5f * l
+    + l_2d_on_k0(pa, pb);
 }
 
-std::complex<float> intM2_2D(Float2 x, void* state) {
+void L_2D_ON(float k, const Float2 *pp, const Float2 *pa, const Float2 *pb, Complex * pResult) {
+  std::complex<float> z;
+
+  z = l_2d_on(k, pp, pa, pb);
+  
+  pResult->re = z.real();
+  pResult->im = z.imag();
+}
+
+class IntL2d_off_k0
+{
+public:
+  IntL2d_off_k0(const Float2 *pp, const Float2 *pa, const Float2 *pb): pp_(pp)
+								     , pa_(pa)
+								     , pb_(pb)
+  { ; }
+
+  std::complex<float> operator()(float t) {
+    Float2 q = lerp(t, *pa_, *pb_);
+    float r = norm(*pp_ - q);
+
+    return log(r);
+  }
+
+private:
+  const Float2 *pp_;
+  const Float2 *pa_;
+  const Float2 *pb_;
+};
+
+std::complex<float> l_2d_off_k0(const Float2 *pp, const Float2 *pa, const Float2 *pb) {
+  GaussianQuadrature<GaussLegendre8> integrate;
+  float l = norm(*pa - *pb);
+
+  return static_cast<float>(-0.5 * M_1_PI) * integrate(IntL2d_off_k0(pp, pa, pb), 0.0f, 1.0f) * l;
+}
+
+void L_2D_OFF_K0(const Float2 *pp, const Float2 *pa, const Float2 *pb, Complex * pResult) {
+  std::complex<float> z;
+
+  z = l_2d_off_k0(pp, pa, pb);
+  
+  pResult->re = z.real();
+  pResult->im = z.imag();
+}
+
+class IntL2d_off
+{
+public:
+  IntL2d_off(const float k, const Float2* pp, const Float2* pa, const Float2* pb): k_(k)
+										 , pp_(pp)
+										 , pa_(pa)
+										 , pb_(pb)
+  { ; }
+
+  std::complex<float> operator()(float t) {
+    Float2 q = lerp(t, *pa_, *pb_);
+    float r = norm(*pp_ - q);
+
+    return hankel1(0, k_ * r);
+  }
+
+private:
+  const float k_;
+  const Float2 *pp_;
+  const Float2 *pa_;
+  const Float2 *pb_;
+};
+
+std::complex<float> l_2d_off(float k, const Float2* pp, const Float2* pa, const Float2* pb) {
+  GaussianQuadrature<GaussLegendre8> integrate;
+  float l = norm(*pa - *pb);
+  
+  return 0.25f * 1if * integrate(IntL2d_off(k, pp, pa, pb), 0.0f, 1.0f) * l;
+}
+
+void L_2D_OFF(float k, const Float2* pp, const Float2* pa, const Float2* pb, Complex* pResult) {
+  std::complex<float> z;
+
+  z = l_2d_off(k, pp, pa, pb);
+  
+  pResult->re = z.real();
+  pResult->im = z.imag();
+}
+
+void L_2D(float k, const Float2* pp, const Float2* pa, const Float2* pb, bool pOnElement, Complex* pResult) {
+  std::complex<float> z;
+  if (pOnElement) {
+    if (k == 0.0f)
+      z = l_2d_on_k0(pa, pb);
+    else
+      z = l_2d_on(k, pp, pa, pb);
+  } else {
+    if (k == 0.0f)
+      z = l_2d_off_k0(pp, pa, pb);
+    else
+      z = l_2d_off(k, pp, pa, pb);
+  }
+  pResult->re = z.real();
+  pResult->im = z.imag();
+}
+
+class IntM2d_off_k0
+{
+public:
+  IntM2d_off_k0(const Float2 *pp, const Float2 *pa, const Float2 *pb, const Float2 *pnq): pp_(pp)
+											, pa_(pa)
+											, pb_(pb)
+											, pnq_(pnq)
+  { ; }
+
+  std::complex<float> operator()(float t) {
+    Float2 q = lerp(t, *pa_, *pb_);
+    Float2 r = *pp_ - q;
+
+    return dot(r,*pnq_) / dot(r, r);
+  }
+
+private:
+  const Float2 *pp_;
+  const Float2 *pa_;
+  const Float2 *pb_;
+  const Float2 *pnq_;
+};
+
+std::complex<float> m_2d_off_k0(const Float2 *pp, const Float2 *pa, const Float2 *pb) {
+  GaussianQuadrature<GaussLegendre8> integrate;
+  float l = norm(*pa - *pb);
+  Float2 n_q = normal(*pa, *pb);
+
+  return static_cast<float>(0.5f * M_1_PI) * integrate(IntM2d_off_k0(pp, pa, pb, &n_q), 0.0f, 1.0f) * l;
+}
+
+void M_2D_OFF_K0(const Float2 *pp, const Float2 *pa, const Float2 *pb, Complex * pResult) {
+  std::complex<float> z;
+
+  z = m_2d_off_k0(pp, pa, pb);
+  
+  pResult->re = z.real();
+  pResult->im = z.imag();
+}
+
+std::complex<float> int_m_2d_off(const Float2 *px, void* state) {
   IntL * s = (IntL *) state;
-  Float2 r = s->p - x;
+  Float2 r = *s->pp - *px;
   float R = norm(r);
-  return hankel1(1, s->k * R) * dot(r, s->normal_q) / R;
+  return hankel1(1, s->k * R) * dot(r, *s->p_normal_q) / R;
 }
 
-/* Computes elements of the Helmholtz M-Operator.
- *
- * Parameters:
- *   k - the wavenumber of the problem.
- *   px, py - the point receiving radiation from the boundary.
- *   ax, ay - the starting point of the boundary element being integrated over.
- *   bx, by - the end point of the bondary element being integrated over.
- *   pOnElement - a boolean indicating if p is on the boundary element being integrated.
- *
- *   Returns:
- *     The results of the integration, which are typically a complex
- *     number are stored in those two floats, the first being the Real-, the
- *     second being the Imaginary component of that complex value.
- */
-std::complex<float> computeM_2D(float k, Float2 p, Float2 a, Float2 b, bool pOnElement) {
-  Float2 zero = {0.0f, 0.0f};
-  IntL stat = {k, p, zero, normal(a, b)};
-  IntRule1D intRule = {8, aX_1D, aW_1D};
+class IntM2d_off
+{
+public:
+  IntM2d_off(const float k, const Float2 *pp, const Float2 *pa, const Float2 *pb, const Float2 *pnq): k_(k)
+												    , pp_(pp)
+												    , pa_(pa)
+												    , pb_(pb)
+												    , pnq_(pnq)
+  { ; }
 
-  if (pOnElement) {
-    return 0.0;
-  } else {
-    if (k == 0.0f) {
-      return static_cast<float>(0.5f * M_1_PI) * complexQuad2D(intM1_2D, &stat, intRule, a, b);
-    } else {
-      return 0.25f * 1if * k * complexQuad2D(intM2_2D, &stat, intRule, a, b);
-    }
+  std::complex<float> operator()(float t) {
+    Float2 q = lerp(t, *pa_, *pb_);
+    Float2 r = *pp_ - q;
+    float R = norm(r);
+
+    return hankel1(1, k_ * R) * dot(r, *pnq_) / R;
   }
+
+private:
+  const float k_;
+  const Float2 *pp_;
+  const Float2 *pa_;
+  const Float2 *pb_;
+  const Float2 *pnq_;
+};
+
+std::complex<float> m_2d_off(float k, const Float2 *pp, const Float2 *pa, const Float2 *pb) {
+  GaussianQuadrature<GaussLegendre8> integrate;
+  float l = norm(*pa - *pb);
+  Float2 n_q = normal(*pa, *pb);
+  
+  return 0.25f * 1if * k * integrate(IntM2d_off(k, pp, pa, pb, &n_q), 0.0f, 1.0f) * l;
 }
 
-void ComputeM_2D(float k, Float2 p, Float2 a, Float2 b, bool pOnElement, Complex * pResult) {
-  std::complex<float> z = computeM_2D(k, p, a, b, pOnElement);
+void M_2D_OFF(float k, const Float2 *pp, const Float2 *pa, const Float2 *pb, Complex * pResult) {
+  std::complex<float> z;
+
+  z = m_2d_off(k, pp, pa, pb);
+  
   pResult->re = z.real();
   pResult->im = z.imag();
 }
 
-/* Computes elements of the Helmholtz Mt-Operator.
- *
- * Parameters:
- *   k - the wavenumber of the problem.
- *   px, py - the point receiving radiation from the boundary.
- *   ax, ay - the starting point of the boundary element being integrated over.
- *   bx, by - the end point of the bondary element being integrated over.
- *   pOnElement - a boolean indicating if p is on the boundary element being integrated.
- *
- *   Returns:
- *     The results of the integration, which are typically a complex
- *     number are stored in those two floats, the first being the Real-, the
- *     second being the Imaginary component of that complex value.
- */
-std::complex<float> computeMt_2D(float k, Float2 p, Float2 normal_p, Float2 a, Float2 b, bool pOnElement) {
-  /* The flollowing is a little hacky, as we're not storing the actual normal_p vector in the
-   * normal_q field of the state struct. By doing this we can reuse the two functions for the
-   * M operator's integral evaluation intM1 and intM2.
-   */
-  Float2 zero = {0.0f, 0.0f};
-  IntL stat = {k, p, zero, normal_p};
-  IntRule1D intRule = {8, aX_1D, aW_1D};
-
-  if (pOnElement) {
-    return 0.0;
-  } else {
-    if (k == 0.0f) {
-      return static_cast<float>(-0.5f * M_1_PI) * complexQuad2D(intM1_2D, &stat, intRule, a, b);
-    } else {
-      return -0.25f * 1if * k * complexQuad2D(intM2_2D, &stat, intRule, a, b);
-    }
+void M_2D(float k, const Float2 *pp, const Float2 *pa, const Float2 *pb, bool pOnElement, Complex * pResult) {
+  std::complex<float> z;
+  if (pOnElement)
+    z = 0.0;
+  else {
+    if (k == 0.0f)
+      z = m_2d_off_k0(pp, pa, pb);
+    else
+      z = m_2d_off(k, pp, pa, pb);
   }
-}
-
-void ComputeMt_2D(float k, Float2 p, Float2 normal_p, Float2 a, Float2 b, bool pOnElement, Complex * pResult) {
-  std::complex<float> z = computeMt_2D(k, p, normal_p, a, b, pOnElement);
   pResult->re = z.real();
   pResult->im = z.imag();
 }
 
+std::complex<float> mt_2d_off_k0(const Float2 *pp, const Float2 *pnp, const Float2 *pa, const Float2 *pb) {
+  GaussianQuadrature<GaussLegendre8> integrate;
+  float l = norm(*pa - *pb);
 
-std::complex<float> intN1_2D(Float2 x, void* state) {
-  IntL * s = (IntL *) state;
-  Float2 r = s->p - x;
-  float R2 = dot(r, r);
-  float R = sqrtf(R2);
-  float drdudrdn = -dot(r, s->normal_q) * dot(r, s->normal_p) / R2;
-  float dpnu = dot(s->normal_p, s->normal_q);
-  std::complex<float> c1 = 0.25f * 1if * s->k / R * hankel1(1, s->k * R) - 0.5f * static_cast<float>(M_1_PI / R2);
-  std::complex<float> c2 = 0.50f * 1if * s->k / R * hankel1(1, s->k * R)
-    - 0.25f * 1if * s->k * s->k * hankel1(0, s->k * R) - static_cast<float>(M_1_PI / R2);
-  float c3 = -0.25f * s->k * s->k * logf(R) * static_cast<float>(M_1_PI);
-
-  return c1 * dpnu + c2 * drdudrdn + c3;
+  return static_cast<float>(-0.5f * M_1_PI) * integrate(IntM2d_off_k0(pp, pa, pb, pnp), 0.0f, 1.0f) * l;
 }
 
-std::complex<float> intN2_2D(Float2 x, void* state) {
-  IntL * s = (IntL *) state;
-  Float2 r = s->p - x;
-  float R2 = dot(r, r);
-  float drdudrdn = -dot(r, s->normal_q) * dot(r, s->normal_p) / R2;
-  float dpnu = dot(s->normal_p, s->normal_q);
+void MT_2D_OFF_K0(const Float2 *pp, const Float2 *p_normal_p, const Float2 *pa, const Float2 *pb, Complex * pResult) {
+  std::complex<float> z;
 
-  return (dpnu + 2.0f * drdudrdn) / R2;
+  z = mt_2d_off_k0(pp, p_normal_p, pa, pb);
+
+  pResult->re = z.real();
+  pResult->im = z.imag();
 }
 
-std::complex<float> intN3_2D(Float2 x, void* state) {
-  IntL * s = (IntL *) state;
-  Float2 r = s->p - x;
-  float R2 = dot(r, r);
-  float R = sqrtf(R2);
-  float drdudrdn = -dot(r, s->normal_q) * dot(r, s->normal_p) / R2;
-  float dpnu = dot(s->normal_p, s->normal_q);
+std::complex<float> mt_2d_off(float k, const Float2 *pp, const Float2 *pnp, const Float2 *pa, const Float2 *pb) {
+  GaussianQuadrature<GaussLegendre8> integrate;
+  float l = norm(*pa - *pb);
 
-  return hankel1(1, s->k * R) / R * (dpnu + 2.0f * drdudrdn)
-    - s->k * hankel1(0, s->k * R) * drdudrdn;
+  return -0.25f * 1if * k * integrate(IntM2d_off(k, pp, pa, pb, pnp), 0.0f, 1.0f) * l;
 }
 
+void MT_2D_OFF(float k, const Float2 *pp, const Float2 *p_normal_p, const Float2 *pa, const Float2 *pb, Complex * pResult) {
+  std::complex<float> z;
 
-/* Computes elements of the Helmholtz N-Operator.
- *
- * Parameters:
- *   k - the wavenumber of the problem.
- *   px, py - the point receiving radiation from the boundary.
- *   ax, ay - the starting point of the boundary element being integrated over.
- *   bx, by - the end point of the bondary element being integrated over.
- *   pOnElement - a boolean indicating if p is on the boundary element being integrated.
- *
- *   Returns:
- *     The results of the integration, which are typically a complex
- *     number are stored in those two floats, the first being the Real-, the
- *     second being the Imaginary component of that complex value.
- */
-std::complex<float> computeN_2D(float k, Float2 p, Float2 normal_p, Float2 a, Float2 b, bool pOnElement) {
-  IntL stat = {k, p, normal_p, normal(a, b)};
-  IntRule1D intRule = {8, aX_1D, aW_1D};
+  z = mt_2d_off(k, pp, p_normal_p, pa, pb);
 
-  if (pOnElement) {
-    if (k == 0.0f) {
-      float RA = norm(p - a);
-      float RB = norm(p - b);
-      float RAB = norm(b - a);
-      return -(1.0f / RA + 1.0f / RB) / (RAB * 2.0 * M_PI) * RAB;
-    } else {
-      return computeN_2D(0.0f, p, normal_p, a, b, true)
-	- 0.5f * k * k * computeL_2D(0.0f, p, a, b, true)
-	+ complexQuad2D(intN1_2D, &stat, intRule, a, p) + complexQuad2D(intN1_2D, &stat, intRule, p, b);
-    }
-  } else {
-    if (k == 0.0f) {
-      return static_cast<float>(0.5 * M_1_PI) * complexQuad2D(intN2_2D, &stat, intRule, a, b);
-    } else {
-      return 0.25f * 1if * k * complexQuad2D(intN3_2D, &stat, intRule, a, b);
-    }
+  pResult->re = z.real();
+  pResult->im = z.imag();
+}
+
+std::complex<float> mt_2d(float k, const Float2 *pp, const Float2 *p_normal_p, const Float2 *pa, const Float2 *pb,
+                          bool pOnElement) {
+  if (pOnElement)
+    return 0.0;
+  else {
+    if (k == 0.0f)
+      return mt_2d_off_k0(pp, p_normal_p, pa, pb);
+    else
+      return mt_2d_off(k, pp, p_normal_p, pa, pb);
   }
 }
 
-void ComputeN_2D(float k, Float2 p, Float2 normal_p, Float2 a, Float2 b, bool pOnElement, Complex * pResult) {
-  std::complex<float> z = computeN_2D(k, p, normal_p, a, b, pOnElement);
+void MT_2D(float k, const Float2 *pp, const Float2 *p_normal_p, const Float2 *pa, const Float2 *pb, bool pOnElement,
+           Complex * pResult) {
+  std::complex<float> z;
+  if (pOnElement)
+    z = 0.0;
+  else {
+    if (k == 0.0f)
+      z = mt_2d_off_k0(pp, p_normal_p, pa, pb);
+    else
+      z = mt_2d_off(k, pp, p_normal_p, pa, pb);
+  }
+  pResult->re = z.real();
+  pResult->im = z.imag();
+}
+
+std::complex<float> n_2d_on_k0(const Float2 *pa, const Float2 *pb) {
+  float ab = norm(*pb - *pa);
+  
+  return -2.0f / (M_PI * ab);
+}
+
+void N_2D_ON_K0(const Float2 *pa, const Float2 *pb, Complex *pResult) {
+  std::complex<float> z;
+
+  z = n_2d_on_k0(pa, pb);
+  
+  pResult->re = z.real();
+  pResult->im = z.imag();
+}
+
+class IntN2d_on
+{
+public:
+  IntN2d_on(const float k, const Float2 *pp, const Float2 *pnp, const Float2 *pa, const Float2 *pb,
+	    const Float2 *pnq): k_(k)
+			      , pp_(pp)
+			      , pnp_(pnp)
+			      , pa_(pa)
+			      , pb_(pb)
+			      , pnq_(pnq)
+  { ; }
+
+  std::complex<float> operator()(float t) {
+    Float2 q = lerp(t, *pa_, *pb_);
+    Float2 r = *pp_ - q;
+    float R2 = dot(r, r);
+    float R = sqrtf(R2);
+    float drdudrdn = -dot(r, *pnq_) * dot(r, *pnp_) / R2;
+    float dpnu = dot(*pnp_, *pnq_);
+    std::complex<float> c1 = 0.25f * 1if * k_ / R * hankel1(1, k_ * R) - 0.5f * static_cast<float>(M_1_PI) / R2;
+    std::complex<float> c2 = 0.50f * 1if * k_ / R * hankel1(1, k_ * R)
+      - 0.25f * 1if * k_ * k_ * hankel1(0, k_ * R) - static_cast<float>(M_1_PI) / R2;
+    float c3 = -0.25f * k_ * k_ * logf(R) * static_cast<float>(M_1_PI);
+    
+    return c1 * dpnu + c2 * drdudrdn + c3;
+  }
+
+private:
+  const float k_;
+  const Float2 *pp_;
+  const Float2 *pnp_;
+  const Float2 *pa_;
+  const Float2 *pb_;
+  const Float2 *pnq_;
+};
+
+std::complex<float> n_2d_on(float k, const Float2 *pp, const Float2 *pnp, const Float2 *pa, const Float2 *pb) {
+  GaussianQuadrature<GaussLegendre8> integrate;
+  float l = norm(*pa - *pb);
+  Float2 n_q = normal(*pa, *pb);
+
+  return n_2d_on_k0(pa, pb) - 0.5f * k * k * l_2d_on_k0(pa, pb) +
+    (integrate(IntN2d_on(k, pp, pnp, pa, pp, &n_q), 0.0, 1.0) + integrate(IntN2d_on(k, pp, pnp, pp, pb, &n_q), 0.0, 1.0)) * 0.5f * l;
+}
+
+void N_2D_ON(float k, const Float2 *pp, const Float2 *p_normal_p, const Float2 *pa, const Float2 *pb, Complex *pResult) {
+  std::complex<float> z;
+
+  z = n_2d_on(k, pp, p_normal_p, pa, pb);
+  
+  pResult->re = z.real();
+  pResult->im = z.imag();
+}
+
+class IntN2d_off_k0
+{
+public:
+  IntN2d_off_k0(const Float2 *pp, const Float2 *pnp, const Float2 *pa, const Float2 *pb,
+		const Float2 *pnq): pp_(pp)
+				  , pnp_(pnp)
+				  , pa_(pa)
+				  , pb_(pb)
+				  , pnq_(pnq)
+  { ; }
+
+  std::complex<float> operator()(float t) {
+    Float2 q = lerp(t, *pa_, *pb_);
+    Float2 r = *pp_ - q;
+    float R2 = dot(r, r);
+    float drdudrdn = -dot(r, *pnq_) * dot(r, *pnp_) / R2;
+    float dpnu = dot(*pnp_, *pnq_);
+    
+    return (dpnu + 2.0f * drdudrdn) / R2;
+  }
+
+private:
+  const Float2 *pp_;
+  const Float2 *pnp_;
+  const Float2 *pa_;
+  const Float2 *pb_;
+  const Float2 *pnq_;
+};
+
+std::complex<float> n_2d_off_k0(const Float2 *pp, const Float2 *pnp, const Float2 *pa, const Float2 *pb) {
+  GaussianQuadrature<GaussLegendre8> integrate;
+  float l = norm(*pa - *pb);
+  Float2 n_q = normal(*pa, *pb);
+
+  return static_cast<float>(0.5 * M_1_PI) * integrate(IntN2d_off_k0(pp, pnp, pa, pb, &n_q), 0.0f, 1.0f) * l;
+}
+
+void N_2D_OFF_K0(const Float2 *pp, const Float2 *p_normal_p, const Float2 *pa, const Float2 *pb, Complex *pResult) {
+  std::complex<float> z;
+
+  z = n_2d_off_k0(pp, p_normal_p, pa, pb);
+  
+  pResult->re = z.real();
+  pResult->im = z.imag();
+}
+
+class IntN2d_off
+{
+public:
+  IntN2d_off(const float k, const Float2 *pp, const Float2 *pnp, const Float2 *pa, const Float2 *pb,
+	     const Float2 *pnq): k_(k)
+			       , pp_(pp)
+			       , pnp_(pnp)
+			       , pa_(pa)
+			       , pb_(pb)
+			       , pnq_(pnq)
+  { ; }
+
+  std::complex<float> operator()(float t) {
+    Float2 q = lerp(t, *pa_, *pb_);
+    Float2 r = *pp_ - q;
+    float R2 = dot(r, r);
+    float R = sqrtf(R2);
+    float drdudrdn = -dot(r, *pnq_) * dot(r, *pnp_) / R2;
+    float dpnu = dot(*pnp_, *pnq_);
+
+  return hankel1(1, k_ * R) / R * (dpnu + 2.0f * drdudrdn)
+    - k_ * hankel1(0, k_ * R) * drdudrdn;
+  }
+
+private:
+  const float k_;
+  const Float2 *pp_;
+  const Float2 *pnp_;
+  const Float2 *pa_;
+  const Float2 *pb_;
+  const Float2 *pnq_;
+};
+
+std::complex<float> n_2d_off(float k, const Float2 *pp, const Float2 *pnp, const Float2 *pa, const Float2 *pb) {
+  GaussianQuadrature<GaussLegendre8> integrate;
+  float l = norm(*pa - *pb);
+  Float2 n_q = normal(*pa, *pb);
+  
+  return 0.25f * 1if * k * integrate(IntN2d_off(k, pp, pnp, pa, pb, &n_q), 0.0f, 1.0f) * l;
+}
+
+void N_2D_OFF(float k, const Float2 *pp, const Float2 *p_normal_p, const Float2 *pa, const Float2 *pb,
+              Complex *pResult) {
+  std::complex<float> z;
+
+  z = n_2d_off(k, pp, p_normal_p, pa, pb);
+  
+  pResult->re = z.real();
+  pResult->im = z.imag();
+}
+
+void N_2D(float k, const Float2 *pp, const Float2 *p_normal_p, const Float2 *pa, const Float2 *pb, bool pOnElement,
+          Complex * pResult) {
+  std::complex<float> z;
+  if (pOnElement) {
+    if (k == 0.0f)
+      z = n_2d_on_k0(pa, pb);
+    else
+      z = n_2d_on(k, pp, p_normal_p, pa, pb);
+  } else {
+    if (k == 0.0f)
+      z = n_2d_off_k0(pp, p_normal_p, pa, pb);
+    else
+      z = n_2d_off(k, pp, p_normal_p, pa, pb);
+  }
   pResult->re = z.real();
   pResult->im = z.imag();
 }
@@ -386,11 +711,11 @@ std::complex<float> integrateSemiCircleL_RAD(Float2 x, void *pState) {
   return std::exp(1if * pS->k * R) / R;
 }
 
-std::complex<float> integrateGeneratorL_RAD(Float2 x, void *pState) {
+std::complex<float> integrateGeneratorL_RAD(const Float2 *px, void *pState) {
   RadIntL * pS = (RadIntL *) pState;
 
-  pS->r = x.x;
-  pS->z = x.y;
+  pS->r = px->x;
+  pS->z = px->y;
 
   return complexLineIntegral(integrateSemiCircleL_RAD, pS, pS->semiCircleRule) * pS->r / static_cast<float>(2.0 * M_PI);
 }
@@ -403,11 +728,11 @@ std::complex<float> integrateSemiCircleL0_RAD(Float2 x, void *pState) {
   return 1.0f / R;
 }
 
-std::complex<float> integrateGeneratorL0_RAD(Float2 x, void *pState) {
+std::complex<float> integrateGeneratorL0_RAD(const Float2 *px, void *pState) {
   RadIntL * pS = (RadIntL *) pState;
 
-  pS->r = x.x;
-  pS->z = x.y;
+  pS->r = px->x;
+  pS->z = px->y;
 
   return complexLineIntegral(integrateSemiCircleL0_RAD, pS, pS->semiCircleRule) * pS->r / static_cast<float>(2.0f * M_PI);
 }
@@ -420,11 +745,11 @@ std::complex<float> integrateSemiCircleL0pOn_RAD(Float2 x, void *pState) {
   return (std::exp(1if * pS->k * R) - 1.0f) / R;
 }
 
-std::complex<float> integrateGeneratorL0pOn_RAD(Float2 x, void *pState) {
+std::complex<float> integrateGeneratorL0pOn_RAD(const Float2 *px, void *pState) {
   RadIntL * pS = (RadIntL *) pState;
 
-  pS->r = x.x;
-  pS->z = x.y;
+  pS->r = px->x;
+  pS->z = px->y;
 
   return complexLineIntegral(integrateSemiCircleL0pOn_RAD, pS, pS->semiCircleRule) * pS->r / static_cast<float>(2.0 * M_PI);
 }
@@ -469,7 +794,7 @@ std::complex<float> computeL_RAD(float k, Float2 p, Float2 a, Float2 b, bool pOn
 	+ complexQuadGenerator(integrateGeneratorL0_RAD, &state, intRule, p, b);
     } else {
       return computeL_RAD(0.0f, p, a, b, true)
-	+ complexQuad2D(integrateGeneratorL0pOn_RAD, &state, intRule, a, b);
+	+ complexQuad2D(integrateGeneratorL0pOn_RAD, &state, intRule, &a, &b);
     }
   } else {
     assert(8 * nSections < MAX_LINE_RULE_SAMPLES);
@@ -478,9 +803,9 @@ std::complex<float> computeL_RAD(float k, Float2 p, Float2 a, Float2 b, bool pOn
     state.semiCircleRule = semiCircleRule;
 
     if (k == 0.0f) {
-      return complexQuad2D(integrateGeneratorL0_RAD, &state, intRule, a, b);
+      return complexQuad2D(integrateGeneratorL0_RAD, &state, intRule, &a, &b);
     } else {
-      return complexQuad2D(integrateGeneratorL_RAD, &state, intRule, a, b);
+      return complexQuad2D(integrateGeneratorL_RAD, &state, intRule, &a, &b);
     }
   }
 }
@@ -505,11 +830,11 @@ std::complex<float> integrateSemiCircleM_RAD(Float2 x, void *pState) {
   return (1if * pS->k * R - 1.0f) * std::exp(1if * pS->k * R) * dot(r, nq) / (R * dot(r, r));
 }
 
-std::complex<float> integrateGeneratorM_RAD(Float2 x, void *pState) {
+std::complex<float> integrateGeneratorM_RAD(const Float2 *px, void *pState) {
   RadIntL * pS = (RadIntL *) pState;
 
-  pS->r = x.x;
-  pS->z = x.y;
+  pS->r = px->x;
+  pS->z = px->y;
 
   return complexLineIntegral(integrateSemiCircleM_RAD, pS, pS->semiCircleRule) * pS->r / static_cast<float>(2.0 * M_PI);
 }
@@ -524,11 +849,11 @@ std::complex<float> integrateSemiCircleMpOn_RAD(Float2 x, void *pState) {
   return -dot(r, nq) / (R * dot(r, r));
 }
 
-std::complex<float> integrateGeneratorMpOn_RAD(Float2 x, void *pState) {
+std::complex<float> integrateGeneratorMpOn_RAD(const Float2 *px, void *pState) {
   RadIntL * pS = (RadIntL *) pState;
 
-  pS->r = x.x;
-  pS->z = x.y;
+  pS->r = px->x;
+  pS->z = px->y;
 
   return complexLineIntegral(integrateSemiCircleMpOn_RAD, pS, pS->semiCircleRule) * pS->r / static_cast<float>(2.0 * M_PI);
 }
@@ -571,17 +896,17 @@ std::complex<float> computeM_RAD(float k, Float2 p, Float2 a, Float2 b, bool pOn
 
   if (k == 0.0f) {
     if (pOnElement) {
-      return complexQuad2D(integrateGeneratorMpOn_RAD, &state, intRule, a, p)
-	+ complexQuad2D(integrateGeneratorMpOn_RAD, &state, intRule, p, b);
+      return complexQuad2D(integrateGeneratorMpOn_RAD, &state, intRule, &a, &p)
+	+ complexQuad2D(integrateGeneratorMpOn_RAD, &state, intRule, &p, &b);
     } else {
-      return complexQuad2D(integrateGeneratorMpOn_RAD, &state, intRule, a, b);
+      return complexQuad2D(integrateGeneratorMpOn_RAD, &state, intRule, &a, &b);
     }
   } else {
     if (pOnElement) {
-      return complexQuad2D(integrateGeneratorM_RAD, &state, intRule, a, p)
-	+ complexQuad2D(integrateGeneratorM_RAD, &state, intRule, p, b);
+      return complexQuad2D(integrateGeneratorM_RAD, &state, intRule, &a, &p)
+	+ complexQuad2D(integrateGeneratorM_RAD, &state, intRule, &p, &b);
     } else {
-      return complexQuad2D(integrateGeneratorM_RAD, &state, intRule, a, b);
+      return complexQuad2D(integrateGeneratorM_RAD, &state, intRule, &a, &b);
     }
   }
 }
@@ -606,11 +931,11 @@ std::complex<float> integrateSemiCircleMt_RAD(Float2 x, void *pState) {
   return -(1if * pS->k * R - 1.0f) * std::exp(1if * pS->k * R) * dotRnP / (R * dot(r, r));
 }
 
-std::complex<float> integrateGeneratorMt_RAD(Float2 x, void *pState) {
+std::complex<float> integrateGeneratorMt_RAD(const Float2 *px, void *pState) {
   RadIntL * pS = (RadIntL *) pState;
 
-  pS->r = x.x;
-  pS->z = x.y;
+  pS->r = px->x;
+  pS->z = px->y;
 
   return complexLineIntegral(integrateSemiCircleMt_RAD, pS, pS->semiCircleRule) * pS->r / static_cast<float>(2.0 * M_PI);
 }
@@ -624,11 +949,11 @@ std::complex<float> integrateSemiCircleMtpOn_RAD(Float2 x, void *pState) {
   return dotRnP / (R * dot(r, r));
 }
 
-std::complex<float> integrateGeneratorMtpOn_RAD(Float2 x, void *pState) {
+std::complex<float> integrateGeneratorMtpOn_RAD(const Float2 *px, void *pState) {
   RadIntL * pS = (RadIntL *) pState;
 
-  pS->r = x.x;
-  pS->z = x.y;
+  pS->r = px->x;
+  pS->z = px->y;
 
   return complexLineIntegral(integrateSemiCircleMtpOn_RAD, pS, pS->semiCircleRule) * pS->r / static_cast<float>(2.0 * M_PI);
 }
@@ -671,17 +996,17 @@ std::complex<float> computeMt_RAD(float k, Float2 p, Float2 vec_p, Float2 a, Flo
 
   if (k == 0.0f) {
     if (pOnElement) {
-      return complexQuad2D(integrateGeneratorMtpOn_RAD, &state, intRule, a, p)
-	+ complexQuad2D(integrateGeneratorMtpOn_RAD, &state, intRule, p, b);
+      return complexQuad2D(integrateGeneratorMtpOn_RAD, &state, intRule, &a, &p)
+	+ complexQuad2D(integrateGeneratorMtpOn_RAD, &state, intRule, &p, &b);
     } else {
-      return complexQuad2D(integrateGeneratorMtpOn_RAD, &state, intRule, a, b);
+      return complexQuad2D(integrateGeneratorMtpOn_RAD, &state, intRule, &a, &b);
     }
   } else {
     if (pOnElement) {
-      return complexQuad2D(integrateGeneratorMt_RAD, &state, intRule, a, p)
-	+ complexQuad2D(integrateGeneratorMt_RAD, &state, intRule, p, b);
+      return complexQuad2D(integrateGeneratorMt_RAD, &state, intRule, &a, &p)
+	+ complexQuad2D(integrateGeneratorMt_RAD, &state, intRule, &p, &b);
     } else {
-      return complexQuad2D(integrateGeneratorMt_RAD, &state, intRule, a, b);
+      return complexQuad2D(integrateGeneratorMt_RAD, &state, intRule, &a, &b);
     }
   }
 }
@@ -714,11 +1039,11 @@ std::complex<float> integrateSemiCircleN_RAD(Float2 x, void *pState) {
   return fpgr * RnPnQ + fpgrr * RnPRnQ;
 }
 
-std::complex<float> integrateGeneratorN_RAD(Float2 x, void *pState) {
+std::complex<float> integrateGeneratorN_RAD(const Float2 *px, void *pState) {
   RadIntL * pS = (RadIntL *) pState;
 
-  pS->r = x.x;
-  pS->z = x.y;
+  pS->r = px->x;
+  pS->z = px->y;
 
   return complexLineIntegral(integrateSemiCircleN_RAD, pS, pS->semiCircleRule) * pS->r / static_cast<float>(2.0 * M_PI);
 }
@@ -743,11 +1068,11 @@ std::complex<float> integrateSemiCircleNpOn_RAD(Float2 x, void *pState) {
   return (fpgr-fpgr0) * RnPnQ + (fpgrr-fpgrr0) * RnPRnQ + 0.5f * (pS->k*pS->k) * fpg0;
 }
 
-std::complex<float> integrateGeneratorNpOn_RAD(Float2 x, void *pState) {
+std::complex<float> integrateGeneratorNpOn_RAD(const Float2 *px, void *pState) {
   RadIntL * pS = (RadIntL *) pState;
 
-  pS->r = x.x;
-  pS->z = x.y;
+  pS->r = px->x;
+  pS->z = px->y;
 
   return complexLineIntegral(integrateSemiCircleNpOn_RAD, pS, pS->semiCircleRule) * pS->r / static_cast<float>(2.0 * M_PI);
 }
@@ -766,23 +1091,23 @@ std::complex<float> integrateSemiCircleN0pOn_RAD(Float2 x, void *pState) {
   return (dotnPnQ + 3.0f * RnPRnQ) / (R * dot(r,r));
 }
 
-std::complex<float> integrateGeneratorN0pOn_RAD(Float2 x, void *pState) {
+std::complex<float> integrateGeneratorN0pOn_RAD(const Float2 *px, void *pState) {
   RadIntL * pS = (RadIntL *) pState;
 
-  pS->r = x.x;
-  pS->z = x.y;
+  pS->r = px->x;
+  pS->z = px->y;
 
   return complexLineIntegral(integrateSemiCircleN0pOn_RAD, pS, pS->semiCircleRule) * pS->r / static_cast<float>(2.0 * M_PI);
 }
 
-std::complex<float> complexConeIntegral(std::complex<float>(*integrand)(Float2, void*), void* state, IntRule1D intRule,
+std::complex<float> complexConeIntegral(std::complex<float>(*integrand)(const Float2*, void*), void* state, IntRule1D intRule,
 				  Float2 start, Float2 end, int nSections) {
   Float2 delta = 1.0f/nSections * (end - start);
   std::complex<float> sum = 0.0f;
   for (int s = 0; s < nSections; ++s) {
     Float2 segmentStart = start + static_cast<float>(s) * delta;
     Float2 segmentEnd   = start + static_cast<float>(s+1) * delta;
-    sum += complexQuad2D(integrand, state, intRule, segmentStart, segmentEnd);
+    sum += complexQuad2D(integrand, state, intRule, &segmentStart, &segmentEnd);
   }
   return sum;
 }
@@ -847,10 +1172,10 @@ std::complex<float> computeN_RAD(float k, Float2 p, Float2 vec_p, Float2 a, Floa
   } else {
     if (pOnElement) {
       return computeN_RAD(0.0f, p, vec_p, a, b, true) - 0.5f * (k*k) * computeL_RAD(0.0f, p, a, b, true)
-	+ complexQuad2D(integrateGeneratorNpOn_RAD, &state, intRule, a, p)
-	+ complexQuad2D(integrateGeneratorNpOn_RAD, &state, intRule, p, b);
+	+ complexQuad2D(integrateGeneratorNpOn_RAD, &state, intRule, &a, &p)
+	+ complexQuad2D(integrateGeneratorNpOn_RAD, &state, intRule, &p, &b);
     } else {
-      return complexQuad2D(integrateGeneratorN_RAD, &state, intRule, a, b);
+      return complexQuad2D(integrateGeneratorN_RAD, &state, intRule, &a, &b);
     }
   }
 }

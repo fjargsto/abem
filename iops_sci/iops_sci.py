@@ -150,20 +150,6 @@ def l_2d(k, p, a, b, p_on_element):
             return l_2d_off(k, p, a, b)
 
 
-def int_m_2d(t, k, p, a, b):
-    q = lerp(t, a, b)
-    r = p - q
-    R = norm(r)
-    n_r = r / R
-    n_q = normal_2d(a, b)
-    return dgreen_dr_2d(k, R) * (-np.dot(n_r, n_q))
-
-
-def m_2d_off_k0(p, a, b):
-    l = norm(a - b)
-    return fixed_quad_complex(lambda t: int0_m_2d(t, p, a, b), 0, 1) * l
-
-
 def int0_m_2d(t, p, a, b):
     q = lerp(t, a, b)
     r = p - q
@@ -173,6 +159,20 @@ def int0_m_2d(t, p, a, b):
     return dgreen0_dr_2d(R) * (-np.dot(n_r, n_q))
 
 
+def m_2d_off_k0(p, a, b):
+    l = norm(a - b)
+    return fixed_quad_complex(lambda t: int0_m_2d(t, p, a, b), 0, 1) * l
+
+
+def int_m_2d(t, k, p, a, b):
+    q = lerp(t, a, b)
+    r = p - q
+    R = norm(r)
+    n_r = r / R
+    n_q = normal_2d(a, b)
+    return dgreen_dr_2d(k, R) * (-np.dot(n_r, n_q))
+
+
 def m_2d_off(k, p, a, b):
     l = norm(a - b)
     return fixed_quad_complex(lambda t: int_m_2d(t, k, p, a, b), 0, 1) * l
@@ -180,12 +180,8 @@ def m_2d_off(k, p, a, b):
 
 def m_2d(k, p, a, b, p_on_element):
     if p_on_element:
-        if k == 0.0:
-            # optimization because dot(n_r, n_q) == 0
-            return 0 + 0j
-        else:
-            # optimization because dot(n_r, n_q) == 0
-            return 0 + 0j
+        # optimization because dot(n_r, n_q) == 0
+        return 0 + 0j
     else:
         if k == 0.0:
             return m_2d_off_k0(p, a, b)

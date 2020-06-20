@@ -99,7 +99,11 @@ class TestComputeL_2D(Test2D):
         self.assertAlmostEqual(pyx, gld)
         cpp = iops_cpp.l_2d(k, self.p_off, self.a, self.b, p_on_element)
         self.assertAlmostEqual(cpp, gld)
+        cpp = iops_cpp.l_2d_off_k0(self.p_off, self.a, self.b)
+        self.assertAlmostEqual(cpp, gld)
         sci = iops_sci.l_2d(k, self.p_off, self.a, self.b, p_on_element)
+        self.assertAlmostEqual(sci, gld)
+        sci = iops_sci.l_2d_off_k0(self.p_off, self.a, self.b)
         self.assertAlmostEqual(sci, gld)
 
     def test_compute_L_02(self):
@@ -110,7 +114,11 @@ class TestComputeL_2D(Test2D):
         self.assertAlmostEqual(pyx, gld)
         cpp = iops_cpp.l_2d(k, self.p_off, self.a, self.b, p_on_element)
         self.assertAlmostEqual(cpp, gld)
+        cpp = iops_cpp.l_2d_off(k, self.p_off, self.a, self.b)
+        self.assertAlmostEqual(cpp, gld)
         sci = iops_sci.l_2d(k, self.p_off, self.a, self.b, p_on_element)
+        self.assertAlmostEqual(sci, gld)
+        sci = iops_sci.l_2d_off(k, self.p_off, self.a, self.b)
         self.assertAlmostEqual(sci, gld)
 
     def test_compute_L_03(self):
@@ -121,7 +129,11 @@ class TestComputeL_2D(Test2D):
         self.assertAlmostEqual(pyx, gld)
         cpp = iops_cpp.l_2d(k, self.p_on, self.a, self.b, p_on_element)
         self.assertAlmostEqual(cpp, gld)
+        cpp = iops_cpp.l_2d_on_k0(self.a, self.b)
+        self.assertAlmostEqual(cpp, gld)
         sci = iops_sci.l_2d(k, self.p_on, self.a, self.b, p_on_element)
+        self.assertAlmostEqual(sci, gld)
+        sci = iops_sci.l_2d_on_k0(self.a, self.b)
         self.assertAlmostEqual(sci, gld)
 
     def test_compute_L_04(self):
@@ -132,7 +144,11 @@ class TestComputeL_2D(Test2D):
         self.assertAlmostEqual(pyx, gld)
         cpp = iops_cpp.l_2d(k, self.p_on, self.a, self.b, p_on_element)
         self.assertAlmostEqual(cpp, gld)
+        cpp = iops_cpp.l_2d_on(k, self.p_on, self.a, self.b)
+        self.assertAlmostEqual(cpp, gld)
         sci = iops_sci.l_2d(k, self.p_on, self.a, self.b, p_on_element)
+        self.assertAlmostEqual(sci, gld, 6)
+        sci = iops_sci.l_2d_on(k, self.p_on, self.a, self.b)
         self.assertAlmostEqual(sci, gld, 6)
 
 
@@ -145,7 +161,11 @@ class TestComputeM_2D(Test2D):
         self.assertAlmostEqual(pyx, gld)
         cpp = iops_cpp.m_2d(k, self.p_off, self.a, self.b, p_on_element)
         self.assertAlmostEqual(cpp, gld)
+        cpp = iops_cpp.m_2d_off_k0(self.p_off, self.a, self.b)
+        self.assertAlmostEqual(cpp, gld)
         sci = iops_sci.m_2d(k, self.p_off, self.a, self.b, p_on_element)
+        self.assertAlmostEqual(sci, gld)
+        sci = iops_sci.m_2d_off_k0(self.p_off, self.a, self.b)
         self.assertAlmostEqual(sci, gld)
 
     def test_compute_M_02(self):
@@ -157,6 +177,10 @@ class TestComputeM_2D(Test2D):
         cpp = iops_cpp.m_2d(k, self.p_off, self.a, self.b, p_on_element)
         self.assertAlmostEqual(cpp, gld, 6)
         sci = iops_sci.m_2d(k, self.p_off, self.a, self.b, p_on_element)
+        self.assertAlmostEqual(cpp, gld, 6)
+        sci = iops_sci.m_2d_off(k, self.p_off, self.a, self.b)
+        self.assertAlmostEqual(sci, gld, 6)
+        sci = iops_sci.m_2d_off(k, self.p_off, self.a, self.b)
         self.assertAlmostEqual(sci, gld, 6)
 
 
@@ -193,7 +217,11 @@ class TestComputeMt_2D(Test2D):
         self.assertAlmostEqual(pyx, gld)
         cpp = iops_cpp.mt_2d(k, self.p_off, self.n_p_off, self.a, self.b, p_on_element)
         self.assertAlmostEqual(cpp, gld)
+        cpp = iops_cpp.mt_2d_off_k0(self.p_off, self.n_p_off, self.a, self.b)
+        self.assertAlmostEqual(cpp, gld)
         sci = iops_sci.mt_2d(k, self.p_off, self.n_p_off, self.a, self.b, p_on_element)
+        self.assertAlmostEqual(sci, gld)
+        sci = iops_sci.mt_2d_off_k0(self.p_off, self.n_p_off, self.a, self.b)
         self.assertAlmostEqual(sci, gld)
 
     def test_compute_Mt_02(self):
@@ -204,7 +232,11 @@ class TestComputeMt_2D(Test2D):
         self.assertAlmostEqual(pyx, gld, 6)
         cpp = iops_cpp.mt_2d(k, self.p_off, self.n_p_off, self.a, self.b, p_on_element)
         self.assertAlmostEqual(cpp, gld, 6)
+        cpp = iops_cpp.mt_2d_off(k, self.p_off, self.n_p_off, self.a, self.b)
+        self.assertAlmostEqual(cpp, gld, 6)
         sci = iops_sci.mt_2d(k, self.p_off, self.n_p_off, self.a, self.b, p_on_element)
+        self.assertAlmostEqual(sci, gld, 6)
+        sci = iops_sci.mt_2d_off(k, self.p_off, self.n_p_off, self.a, self.b)
         self.assertAlmostEqual(sci, gld, 6)
 
     def test_compute_Mt_03(self):
@@ -239,7 +271,11 @@ class TestComputeN_2D(Test2D):
         self.assertAlmostEqual(pyx, gld)
         cpp = iops_cpp.n_2d(k, self.p_off, self.n_p_off, self.a, self.b, p_on_element)
         self.assertAlmostEqual(cpp, gld)
+        cpp = iops_cpp.n_2d_off_k0(self.p_off, self.n_p_off, self.a, self.b)
+        self.assertAlmostEqual(cpp, gld)
         sci = iops_sci.n_2d(k, self.p_off, self.n_p_off, self.a, self.b, p_on_element)
+        self.assertAlmostEqual(sci, gld)
+        sci = iops_sci.n_2d_off_k0(self.p_off, self.n_p_off, self.a, self.b)
         self.assertAlmostEqual(sci, gld)
 
     def test_compute_N_02(self):
@@ -250,7 +286,11 @@ class TestComputeN_2D(Test2D):
         self.assertAlmostEqual(pyx, gld, 5)
         cpp = iops_cpp.n_2d(k, self.p_off, self.n_p_off, self.a, self.b, p_on_element)
         self.assertAlmostEqual(cpp, gld, 5)
+        cpp = iops_cpp.n_2d_off(k, self.p_off, self.n_p_off, self.a, self.b)
+        self.assertAlmostEqual(cpp, gld, 5)
         sci = iops_sci.n_2d(k, self.p_off, self.n_p_off, self.a, self.b, p_on_element)
+        self.assertAlmostEqual(sci, gld, 5)
+        sci = iops_sci.n_2d_off(k, self.p_off, self.n_p_off, self.a, self.b)
         self.assertAlmostEqual(sci, gld, 5)
 
     def test_compute_N_03(self):
@@ -261,7 +301,11 @@ class TestComputeN_2D(Test2D):
         self.assertAlmostEqual(pyx, gld)
         cpp = iops_cpp.n_2d(k, self.p_on, self.n_p_on, self.a, self.b, p_on_element)
         self.assertAlmostEqual(cpp, gld)
-        sci = iops_sci.n_2d(k, self.p_on, self.n_p_off, self.a, self.b, p_on_element)
+        cpp = iops_cpp.n_2d_on_k0(self.a, self.b)
+        self.assertAlmostEqual(cpp, gld)
+        sci = iops_sci.n_2d(k, self.p_on, self.n_p_on, self.a, self.b, p_on_element)
+        self.assertAlmostEqual(sci, gld)
+        sci = iops_sci.n_2d_on_k0(self.a, self.b)
         self.assertAlmostEqual(sci, gld)
 
     def test_compute_N_04(self):
@@ -271,8 +315,12 @@ class TestComputeN_2D(Test2D):
         pyx = iops_pyx.n_2d(k, self.p_on, self.n_p_on, self.a, self.b, p_on_element)
         self.assertAlmostEqual(pyx, gld, 4)
         cpp = iops_cpp.n_2d(k, self.p_on, self.n_p_on, self.a, self.b, p_on_element)
-        self.assertAlmostEqual(cpp, gld, 5)
+        self.assertAlmostEqual(cpp, gld, 4)
+        cpp = iops_cpp.n_2d_on(k, self.p_on, self.n_p_on, self.a, self.b)
+        self.assertAlmostEqual(cpp, gld, 4)
         sci = iops_sci.n_2d(k, self.p_on, self.n_p_on, self.a, self.b, p_on_element)
+        self.assertAlmostEqual(sci, gld, 4)
+        sci = iops_sci.n_2d_on(k, self.p_on, self.n_p_on, self.a, self.b)
         self.assertAlmostEqual(sci, gld, 4)
 
 

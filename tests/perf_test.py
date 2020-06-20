@@ -22,48 +22,76 @@ class PerfExperiment2D(object):
         self.table_m = []
         self.table_mt = []
         self.table_n = []
+        self.specialized_modules = ["iops_sci", "iops_cpp"]
 
     def l_experiments(self, module):
         row = [module.__name__]
-        if module.__name__ == "iops_sci":
+        if module.__name__ in self.specialized_modules:
             row.append(timeit.timeit(lambda: module.l_2d_off_k0(self.p_off, self.a, self.b), number=1000))
+            row.append(timeit.timeit(lambda: module.l_2d_off(16.0, self.p_off, self.a, self.b), number=1000))
+            row.append(timeit.timeit(lambda: module.l_2d_on_k0(self.a, self.b), number=1000))
+            row.append(timeit.timeit(lambda: module.l_2d_on(16.0, self.p_on, self.a, self.b), number=1000))
         else:
             row.append(timeit.timeit(lambda: module.l_2d(0.0, self.p_off, self.a, self.b, False), number=1000))
-        row.append(timeit.timeit(lambda: module.l_2d(16.0, self.p_off, self.a, self.b, False), number=1000))
-        row.append(timeit.timeit(lambda: module.l_2d(0.0, self.p_on, self.a, self.b, True), number=1000))
-        row.append(timeit.timeit(lambda: module.l_2d(16.0, self.p_on, self.a, self.b, True), number=1000))
+            row.append(timeit.timeit(lambda: module.l_2d(16.0, self.p_off, self.a, self.b, False), number=1000))
+            row.append(timeit.timeit(lambda: module.l_2d(0.0, self.p_on, self.a, self.b, True), number=1000))
+            row.append(timeit.timeit(lambda: module.l_2d(16.0, self.p_on, self.a, self.b, True), number=1000))
         self.table_l.append(row)
 
     def m_experiments(self, module):
         row = [module.__name__]
-        row.append(timeit.timeit(lambda: module.m_2d(0.0, self.p_off, self.a, self.b, False), number=1000))
-        row.append(timeit.timeit(lambda: module.m_2d(16.0, self.p_off, self.a, self.b, False), number=1000))
-        row.append(timeit.timeit(lambda: module.m_2d(0.0, self.p_on, self.a, self.b, True), number=1000))
-        row.append(timeit.timeit(lambda: module.m_2d(16.0, self.p_on, self.a, self.b, True), number=1000))
+        if module.__name__ in self.specialized_modules:
+            row.append(timeit.timeit(lambda: module.m_2d_off_k0(self.p_off, self.a, self.b), number=1000))
+            row.append(timeit.timeit(lambda: module.m_2d_off(16.0, self.p_off, self.a, self.b), number=1000))
+            row.append("n/a")
+            row.append("n/a")
+        else:
+            row.append(timeit.timeit(lambda: module.m_2d(0.0, self.p_off, self.a, self.b, False), number=1000))
+            row.append(timeit.timeit(lambda: module.m_2d(16.0, self.p_off, self.a, self.b, False), number=1000))
+            row.append(timeit.timeit(lambda: module.m_2d(0.0, self.p_on, self.a, self.b, True), number=1000))
+            row.append(timeit.timeit(lambda: module.m_2d(16.0, self.p_on, self.a, self.b, True), number=1000))
         self.table_m.append(row)
 
     def mt_experiments(self, module):
         row = [module.__name__]
-        row.append(timeit.timeit(lambda: module.mt_2d(0.0, self.p_off, self.n_p_off,
-                                                                  self.a, self.b, False), number=1000))
-        row.append(timeit.timeit(lambda: module.mt_2d(16.0, self.p_off, self.n_p_off,
-                                                                  self.a, self.b, False), number=1000))
-        row.append(timeit.timeit(lambda: module.mt_2d(0.0, self.p_on, self.n_p_on,
-                                                                  self.a, self.b, True), number=1000))
-        row.append(timeit.timeit(lambda: module.mt_2d(16.0, self.p_on, self.n_p_on,
-                                                                  self.a, self.b, True), number=1000))
+        if module.__name__ in self.specialized_modules:
+            row.append(timeit.timeit(lambda: module.mt_2d_off_k0(self.p_off, self.n_p_off, self.a, self.b),
+                                     number=1000))
+            row.append(timeit.timeit(lambda: module.mt_2d_off(16.0, self.p_off, self.n_p_off, self.a, self.b),
+                                     number=1000))
+            row.append("n/a")
+            row.append("n/a")
+        else:
+            row.append(
+                timeit.timeit(lambda: module.mt_2d(0.0, self.p_off, self.n_p_off, self.a, self.b, False),
+                              number=1000))
+            row.append(timeit.timeit(lambda: module.mt_2d(16.0, self.p_off, self.n_p_off, self.a, self.b, False),
+                                     number=1000))
+            row.append(timeit.timeit(lambda: module.mt_2d(0.0, self.p_on, self.n_p_on, self.a, self.b, True),
+                                     number=1000))
+            row.append(timeit.timeit(lambda: module.mt_2d(16.0, self.p_on, self.n_p_on, self.a, self.b, True),
+                                     number=1000))
         self.table_mt.append(row)
 
     def n_experiments(self, module):
         row = [module.__name__]
-        row.append(timeit.timeit(lambda: module.n_2d(0.0, self.p_off, self.n_p_off,
-                                                                self.a, self.b, False), number=1000))
-        row.append(timeit.timeit(lambda: module.n_2d(16.0, self.p_off, self.n_p_off,
-                                                                self.a, self.b, False), number=1000))
-        row.append(timeit.timeit(lambda: module.n_2d(0.0, self.p_on, self.n_p_on,
-                                                                self.a, self.b, True), number=1000))
-        row.append(timeit.timeit(lambda: module.n_2d(16.0, self.p_on, self.n_p_on,
-                                                                self.a, self.b, True), number=1000))
+        if module.__name__ in self.specialized_modules:
+            row.append(timeit.timeit(lambda: module.n_2d_off_k0(self.p_off, self.n_p_off,
+            self.a, self.b), number=1000))
+            row.append(timeit.timeit(lambda: module.n_2d_off(16.0, self.p_off, self.n_p_off,
+            self.a, self.b), number=1000))
+            row.append(timeit.timeit(lambda: module.n_2d_on_k0(self.a, self.b), number=1000))
+            row.append(timeit.timeit(lambda: module.n_2d_on(16.0, self.p_on, self.n_p_on,
+            self.a, self.b), number=1000))
+        else:
+            row.append(timeit.timeit(lambda: module.n_2d(0.0, self.p_off, self.n_p_off,
+            self.a, self.b, False), number=1000))
+            row.append(timeit.timeit(lambda: module.n_2d(16.0, self.p_off, self.n_p_off,
+            self.a, self.b, False), number=1000))
+            row.append(timeit.timeit(lambda: module.n_2d(0.0, self.p_on, self.n_p_on,
+            self.a, self.b, True), number=1000))
+            row.append(timeit.timeit(lambda: module.n_2d(16.0, self.p_on, self.n_p_on,
+            self.a, self.b, True), number=1000))
         self.table_n.append(row)
 
     def run(self):

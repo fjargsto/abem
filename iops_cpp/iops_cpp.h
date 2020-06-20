@@ -153,7 +153,7 @@ typedef struct {
  *   start - 2-dimensional start point of the line-segment being integrated along.
  *   end   - 2-dimensional end point of the line-segment being integrated along.
  */
-std::complex<float> complexQuad2D(std::complex<float> (*integrand)(Float2, void*), void * state, IntRule1D intRule, Float2 start, Float2 end);
+std::complex<float> complexQuad2D(std::complex<float> (*integrand)(const Float2*, void*), void * state, IntRule1D intRule, const Float2 *start, const Float2 *end);
 
 /* An array containing the abscissa values of the default 1-dimensional integration rule. */
 extern float aX_1D[];
@@ -228,12 +228,29 @@ void semiCircleIntegralRule(int nSections, IntRule1D intRule, IntRule2D * pSemiC
 std::complex<float> complexLineIntegral(std::complex<float> (*integrand)(Float2, void*), void * state, IntRule2D intRule);
 
 
-void Hankel1(int order, float x, Complex * pz);
+void Hankel1(int order, float x, Complex* pz);
 
-void ComputeL_2D(float k, Float2 p, Float2 a, Float2 b, bool pOnElement, Complex * pResult);
-void ComputeM_2D(float k, Float2 p, Float2 a, Float2 b, bool pOnElement, Complex * pResult);
-void ComputeMt_2D(float k, Float2 p, Float2 normal_p, Float2 a, Float2 b, bool pOnElement, Complex * pResult);
-void ComputeN_2D(float k, Float2 p, Float2 normal_p, Float2 a, Float2 b, bool pOnElement, Complex * pResult);
+void L_2D(float k, const Float2* pp, const Float2* pa, const Float2* pb, bool pOnElement, Complex* pResult);
+void L_2D_ON_K0(const Float2* pa, const Float2* pb, Complex* pResult);
+void L_2D_ON(float k, const Float2* pp, const Float2* pa, const Float2* pb, Complex* pResult);
+void L_2D_OFF_K0(const Float2* pp, const Float2* pa, const Float2* pb, Complex* pResult);
+void L_2D_OFF(float k, const Float2* pp, const Float2* pa, const Float2* pb, Complex* pResult);
+
+void M_2D(float k, const Float2 *pp, const Float2 *pa, const Float2 *pb, bool pOnElement, Complex * pResult);
+void M_2D_ON_K0(const Float2 *pp, const Float2 *pa, const Float2 *pb, Complex * pResult);
+void M_2D_ON(float k, const Float2 *pp, const Float2 *pa, const Float2 *pb, Complex * pResult);
+void M_2D_OFF_K0(const Float2 *pp, const Float2 *pa, const Float2 *pb, Complex * pResult);
+void M_2D_OFF(float k, const Float2 *pp, const Float2 *pa, const Float2 *pb, Complex * pResult);
+
+void MT_2D(float k, const Float2 *pp, const Float2 *p_normal_p, const Float2 *pa, const Float2 *pb, bool pOnElement, Complex * pResult);
+void MT_2D_OFF_K0(const Float2 *pp, const Float2 *p_normal_p, const Float2 *pa, const Float2 *pb, Complex * pResult);
+void MT_2D_OFF(float k, const Float2 *pp, const Float2 *p_normal_p, const Float2 *pa, const Float2 *pb, Complex * pResult);
+
+void N_2D(float k, const Float2* pp, const Float2* p_normal_p, const Float2* pa, const Float2* pb, bool pOnElement, Complex* pResult);
+void N_2D_ON_K0(const Float2* pa, const Float2* pb, Complex* pResult);
+void N_2D_ON(float k, const Float2* pp, const Float2* p_normal_p, const Float2* pa, const Float2* pb, Complex* pResult);
+void N_2D_OFF_K0(const Float2* pp, const Float2* p_normal_p, const Float2* pa, const Float2* pb, Complex* pResult);
+void N_2D_OFF(float k, const Float2* pp, const Float2* p_normal_p, const Float2* pa, const Float2* pb, Complex* pResult);
 
 void ComputeL_RAD(float k, Float2 p, Float2 a, Float2 b, bool pOnElement, Complex * pResult);
 void ComputeM_RAD(float k, Float2 p, Float2 a, Float2 b, bool pOnElement, Complex * pResult);
