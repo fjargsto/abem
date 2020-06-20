@@ -41,10 +41,27 @@ cdef extern from "iops_cpp.h":
 
     void Hankel1(int order, float x, Complex * pz)
 
-    void ComputeL_2D(float k, Float2 p, Float2 a, Float2 b, bool pOnElement, Complex * pResult)
-    void ComputeM_2D(float k, Float2 p, Float2 a, Float2 b, bool pOnElement, Complex * pResult)
-    void ComputeMt_2D(float k, Float2 p, Float2 normal_p, Float2 a, Float2 b, bool pOnElement, Complex * pResult)
-    void ComputeN_2D(float k, Float2 p, Float2 normal_p, Float2 a, Float2 b, bool pOnElement, Complex * pResult)
+    void L_2D_ON_K0(const Float2 *pa, const Float2 *pb, Complex * pResult)
+    void L_2D_ON(float k, const Float2 *pp, const Float2 *pa, const Float2 *pb, Complex * pResult)
+    void L_2D_OFF_K0(const Float2 *pp, const Float2 *pa, const Float2 *pb, Complex * pResult)
+    void L_2D_OFF(float k, const Float2* pp, const Float2* pa, const Float2* pb, Complex* pResult)
+    void L_2D(float k, const Float2 *pp, const Float2 *pa, const Float2 *pb, bool pOnElement, Complex * pResult)
+
+    void M_2D_OFF_K0(const Float2* pp, const Float2* pa, const Float2* pb, Complex * pResult)
+    void M_2D_OFF(float k, const Float2* pp, const Float2* pa, const Float2* pb, Complex * pResult)
+    void M_2D(float k, const Float2 *pp, const Float2 *pa, const Float2 *pb, bool pOnElement, Complex * pResult)
+
+    void MT_2D_OFF_K0(const Float2* p, const Float2* normal_p, const Float2* a, const Float2* b, Complex * pResult)
+    void MT_2D_OFF(float k, const Float2* p, const Float2* normal_p, const Float2* a, const Float2* b, Complex * pResult)
+    void MT_2D(float k, const Float2 *pp, const Float2 *p_normal_p, const Float2 *pa, const Float2 *pb, bool pOnElement,
+               Complex * pResult)
+
+    void N_2D_ON_K0(const Float2* a, const Float2* b, Complex* pResult)
+    void N_2D_ON(float k, const Float2* p, const Float2* normal_p, const Float2* a, const Float2* b, Complex * pResult)
+    void N_2D_OFF_K0(const Float2* p, const Float2* normal_p, const Float2* a, const Float2* b, Complex * pResult)
+    void N_2D_OFF(float k, const Float2* p, const Float2* normal_p, const Float2* a, const Float2* b, Complex * pResult)
+    void N_2D(float k, const Float2* pp, const Float2* p_normal_p, const Float2* pa, const Float2* pb, bool pOnElement,
+              Complex * pResult)
 
     void ComputeL_RAD(float k, Float2 p, Float2 a, Float2 b, bool pOnElement, Complex * pResult)
     void ComputeM_RAD(float k, Float2 p, Float2 a, Float2 b, bool pOnElement, Complex * pResult)

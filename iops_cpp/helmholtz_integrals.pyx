@@ -16,7 +16,42 @@ cpdef l_2d(float k, float[:] p, float[:] qa, float[:] qb, bool p_on_element):
     cdef Float2 *cp = <Float2*>&p[0]
     cdef Float2 *a = <Float2*>&qa[0]
     cdef Float2 *b = <Float2*>&qb[0]
-    ComputeL_2D(k, cp[0], a[0], b[0], p_on_element, &result)
+    L_2D(k, cp, a, b, p_on_element, &result)
+    return np.complex64(result.re + result.im * 1j)
+
+
+cpdef l_2d_on_k0(float[:] qa, float[:] qb):
+    cdef Complex result
+    cdef Float2 *a = <Float2*>&qa[0]
+    cdef Float2 *b = <Float2*>&qb[0]
+    L_2D_ON_K0(a, b, &result)
+    return np.complex64(result.re + result.im * 1j)
+
+
+cpdef l_2d_on(float k, float[:] p, float[:] qa, float[:] qb):
+    cdef Complex result
+    cdef Float2 *cp = <Float2*>&p[0]
+    cdef Float2 *a = <Float2*>&qa[0]
+    cdef Float2 *b = <Float2*>&qb[0]
+    L_2D_ON(k, cp, a, b, &result)
+    return np.complex64(result.re + result.im * 1j)
+
+
+cpdef l_2d_off_k0(float[:] p, float[:] qa, float[:] qb):
+    cdef Complex result
+    cdef Float2 *cp = <Float2*>&p[0]
+    cdef Float2 *a = <Float2*>&qa[0]
+    cdef Float2 *b = <Float2*>&qb[0]
+    L_2D_OFF_K0(cp, a, b, &result)
+    return np.complex64(result.re + result.im * 1j)
+
+
+cpdef l_2d_off(float k, float[:] p, float[:] qa, float[:] qb):
+    cdef Complex result
+    cdef Float2 *cp = <Float2*>&p[0]
+    cdef Float2 *a = <Float2*>&qa[0]
+    cdef Float2 *b = <Float2*>&qb[0]
+    L_2D_OFF(k, cp, a, b, &result)
     return np.complex64(result.re + result.im * 1j)
 
 
@@ -25,7 +60,25 @@ cpdef m_2d(float k, float[:] p, float[:] qa, float[:] qb, bool p_on_element):
     cdef Float2 *cp = <Float2*>&p[0]
     cdef Float2 *a = <Float2*>&qa[0]
     cdef Float2 *b = <Float2*>&qb[0]
-    ComputeM_2D(k, cp[0], a[0], b[0], p_on_element, &result)
+    M_2D(k, cp, a, b, p_on_element, &result)
+    return np.complex64(result.re + result.im * 1j)
+
+
+cpdef m_2d_off_k0(float[:] p, float[:] qa, float[:] qb):
+    cdef Complex result
+    cdef Float2 *cp = <Float2*>&p[0]
+    cdef Float2 *a = <Float2*>&qa[0]
+    cdef Float2 *b = <Float2*>&qb[0]
+    M_2D_OFF_K0(cp, a, b, &result)
+    return np.complex64(result.re + result.im * 1j)
+
+
+cpdef m_2d_off(float k, float[:] p, float[:] qa, float[:] qb):
+    cdef Complex result
+    cdef Float2 *cp = <Float2*>&p[0]
+    cdef Float2 *a = <Float2*>&qa[0]
+    cdef Float2 *b = <Float2*>&qb[0]
+    M_2D_OFF(k, cp, a, b, &result)
     return np.complex64(result.re + result.im * 1j)
 
 
@@ -35,7 +88,27 @@ cpdef mt_2d(float k, float[:] p, float[:] normal_p, float[:] qa, float[:] qb, bo
     cdef Float2 *c_normal_p = <Float2*>&normal_p[0]
     cdef Float2 *a = <Float2*>&qa[0]
     cdef Float2 *b = <Float2*>&qb[0]
-    ComputeMt_2D(k, cp[0], c_normal_p[0], a[0], b[0], p_on_element, &result)
+    MT_2D(k, cp, c_normal_p, a, b, p_on_element, &result)
+    return np.complex64(result.re + result.im * 1j)
+
+
+cpdef mt_2d_off_k0(float[:] p, float[:] normal_p, float[:] qa, float[:] qb):
+    cdef Complex result
+    cdef Float2 *cp = <Float2*>&p[0]
+    cdef Float2 *c_normal_p = <Float2*>&normal_p[0]
+    cdef Float2 *a = <Float2*>&qa[0]
+    cdef Float2 *b = <Float2*>&qb[0]
+    MT_2D_OFF_K0(cp, c_normal_p, a, b, &result)
+    return np.complex64(result.re + result.im * 1j)
+
+
+cpdef mt_2d_off(float k, float[:] p, float[:] normal_p, float[:] qa, float[:] qb):
+    cdef Complex result
+    cdef Float2 *cp = <Float2*>&p[0]
+    cdef Float2 *c_normal_p = <Float2*>&normal_p[0]
+    cdef Float2 *a = <Float2*>&qa[0]
+    cdef Float2 *b = <Float2*>&qb[0]
+    MT_2D_OFF(k, cp, c_normal_p, a, b, &result)
     return np.complex64(result.re + result.im * 1j)
 
 
@@ -45,8 +118,47 @@ cpdef n_2d(float k, float[:] p, float[:] normal_p, float[:] qa, float[:] qb, boo
     cdef Float2 *c_normal_p = <Float2*>&normal_p[0]
     cdef Float2 *a = <Float2*>&qa[0]
     cdef Float2 *b = <Float2*>&qb[0]
-    ComputeN_2D(k, cp[0], c_normal_p[0], a[0], b[0], p_on_element, &result)
+    N_2D(k, cp, c_normal_p, a, b, p_on_element, &result)
     return np.complex64(result.re + result.im * 1j)
+
+
+cpdef n_2d_on_k0(float[:] qa, float[:] qb):
+    cdef Complex result
+    cdef Float2 *a = <Float2*>&qa[0]
+    cdef Float2 *b = <Float2*>&qb[0]
+    N_2D_ON_K0(a, b, &result)
+    return np.complex64(result.re + result.im * 1j)
+
+
+cpdef n_2d_on(float k, float[:] p, float[:] normal_p, float[:] qa, float[:] qb):
+    cdef Complex result
+    cdef Float2 *cp = <Float2*>&p[0]
+    cdef Float2 *c_normal_p = <Float2*>&normal_p[0]
+    cdef Float2 *a = <Float2*>&qa[0]
+    cdef Float2 *b = <Float2*>&qb[0]
+    N_2D_ON(k, cp, c_normal_p, a, b, &result)
+    return np.complex64(result.re + result.im * 1j)
+
+
+cpdef n_2d_off_k0(float[:] p, float[:] normal_p, float[:] qa, float[:] qb):
+    cdef Complex result
+    cdef Float2 *cp = <Float2*>&p[0]
+    cdef Float2 *c_normal_p = <Float2*>&normal_p[0]
+    cdef Float2 *a = <Float2*>&qa[0]
+    cdef Float2 *b = <Float2*>&qb[0]
+    N_2D_OFF_K0(cp, c_normal_p, a, b, &result)
+    return np.complex64(result.re + result.im * 1j)
+
+
+cpdef n_2d_off(float k, float[:] p, float[:] normal_p, float[:] qa, float[:] qb):
+    cdef Complex result
+    cdef Float2 *cp = <Float2*>&p[0]
+    cdef Float2 *c_normal_p = <Float2*>&normal_p[0]
+    cdef Float2 *a = <Float2*>&qa[0]
+    cdef Float2 *b = <Float2*>&qb[0]
+    N_2D_OFF(k, cp, c_normal_p, a, b, &result)
+    return np.complex64(result.re + result.im * 1j)
+
 
 # -----------------------------------------------------------------------------
 # 3D
