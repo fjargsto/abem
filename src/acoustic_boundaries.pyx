@@ -7,7 +7,7 @@ import acoustic_properties
 class Chain(object):
     def __init__(self, num_vertices=0, num_edges=0):
         self.vertices = np.empty((num_vertices, 2), dtype=np.float32)
-        self.edges = np.empty((num_edges, 2), dtype=np.int32)
+        self._edges = np.empty((num_edges, 2), dtype=np.int32)
         # named partitions are duples of start and end indices into the triangle array
         self.named_partition = {}
         self._centers = None
@@ -18,34 +18,40 @@ class Chain(object):
     def __repr__(self):
         result = self.__class__.__name__ + "(\n"
         result += "aVertex({}) = {},\n ".format(self.vertices.shape[0], self.vertices)
-        result += "aEdge({}) = {}, \n".format(self.edges.shape[0], self.edges)
+        result += "aEdge({}) = {}, \n".format(self._edges.shape[0], self._edges)
         result += "namedPartition = {}\n)".format(self.named_partition)
         return result
 
-    def edge_vertices(self, edge):
-        return self.vertices[self.edges[edge, 0]], \
-               self.vertices[self.edges[edge, 1]]
+    def edge(self, edge):
+        return self.vertices[self._edges[edge, 0]], \
+               self.vertices[self._edges[edge, 1]]
+
+    def edges(self):
+        result = np.empty((len(self._edges), 2, 2), dtype=np.float32)
+        for i in range(len(self._edges)):
+            result[i, :, :] = self.edge(i)
+        return result
 
     def len(self):
-        return self.edges.shape[0]
+        return self._edges.shape[0]
 
     def centers(self):
         if self._centers is None:
-            self._centers = (self.vertices[self.edges[:, 0]] +
-                             self.vertices[self.edges[:, 1]]) / 2.0
+            self._centers = (self.vertices[self._edges[:, 0]] +
+                             self.vertices[self._edges[:, 1]]) / 2.0
         return self._centers
 
     def _compute_lengths_and_normals(self):
         # length of the boundary elements
-        self._lengths = np.empty(self.edges.shape[0], dtype=np.float32)
-        self._normals = np.empty((self.edges.shape[0], 2), dtype=np.float32)
+        self._lengths = np.empty(self._edges.shape[0], dtype=np.float32)
+        self._normals = np.empty((self._edges.shape[0], 2), dtype=np.float32)
         for i in range(self._lengths.size):
-            a = self.vertices[self.edges[i, 0], :]
-            b = self.vertices[self.edges[i, 1], :]
+            a = self.vertices[self._edges[i, 0], :]
+            b = self.vertices[self._edges[i, 1], :]
             ab = b - a
             normal = np.empty_like(ab)
-            normal[0] = ab[1]
-            normal[1] = -ab[0]
+            normal[0] = -ab[1]
+            normal[1] = ab[0]
             length = np.linalg.norm(normal)
             self._normals[i] = normal / length
             self._lengths[i] = length
@@ -63,9 +69,9 @@ class Chain(object):
     def areas(self, named_partition = None):
         """The areas of the surfaces created by rotating an edge around the x-axis."""
         if self._areas is None:
-            self._areas = np.empty(self.edges.shape[0], dtype=np.float32)
+            self._areas = np.empty(self._edges.shape[0], dtype=np.float32)
             for i in range(self._areas.size):
-                a, b = self.edge_vertices(i)
+                a, b = self.edge(i)
                 self._areas[i] = np.pi * (a[0] + b[0]) * np.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
         if named_partition is None:
             return self._areas
@@ -151,18 +157,18 @@ def square():
                                [0.0500, 0.00], [0.0375, 0.00], [0.0250, 0.00], [0.0125, 0.00]],
                               dtype=np.float32)
 
-    chain.edges = np.array([[0, 1], [1, 2], [2, 3], [3, 4],
-                            [4, 5], [5, 6], [6, 7], [7, 8],
+    chain._edges = np.array([[0, 1], [1, 2], [2, 3], [3, 4],
+                             [4, 5], [5, 6], [6, 7], [7, 8],
 
-                            [8,  9],  [9,  10], [10, 11], [11, 12],
-                            [12, 13], [13, 14], [14, 15], [15, 16],
+                             [8,  9], [9,  10], [10, 11], [11, 12],
+                             [12, 13], [13, 14], [14, 15], [15, 16],
 
-                            [16, 17], [17, 18], [18, 19], [19, 20],
-                            [20, 21], [21, 22], [22, 23], [23, 24],
+                             [16, 17], [17, 18], [18, 19], [19, 20],
+                             [20, 21], [21, 22], [22, 23], [23, 24],
 
-                            [24, 25], [25, 26], [26, 27], [27, 28],
-                            [28, 29], [29, 30], [30, 31], [31,  0]],
-                           dtype=np.int32)
+                             [24, 25], [25, 26], [26, 27], [27, 28],
+                             [28, 29], [29, 30], [30, 31], [31,  0]],
+                            dtype=np.int32)
     return chain
 
 
@@ -227,11 +233,11 @@ def sphere_rad():
                                 [0.866, -0.500], [0.766, -0.643], [0.643, -0.766], [0.500, -0.866],
                                 [0.342, -0.940], [0.174, -0.985], [0.000, -1.000]], dtype=np.float32)
 
-    oChain.edges = np.array([[0,   1], [1,   2], [2,   3], [3,   4],
-                             [4,   5], [5,   6], [6,   7], [7,   8],
-                             [8,   9], [9,  10], [10, 11], [11, 12],
-                             [12, 13], [13, 14], [14, 15], [15, 16],
-                             [16, 17], [17, 18]], dtype=np.int32)
+    oChain._edges = np.array([[0, 1], [1, 2], [2, 3], [3, 4],
+                              [4,   5], [5,   6], [6,   7], [7,   8],
+                              [8,   9], [9,  10], [10, 11], [11, 12],
+                              [12, 13], [13, 14], [14, 15], [15, 16],
+                              [16, 17], [17, 18]], dtype=np.int32)
     return oChain
 
 
@@ -331,20 +337,20 @@ def truncated_sphere_rad():
                                 [0.174, -0.985],
                                 [0.000, -1.000]], dtype=np.float32)
 
-    chain.edges = np.array([[0,   1],
-                            [1,   2],
-                            [2,   3],
-                            [3,   4],
-                            [4,   5],
-                            [5,   6],
-                            [6,   7],
-                            [7,   8],
-                            [8,   9],
-                            [9,  10],
-                            [10, 11],
-                            [11, 12],
-                            [12, 13],
-                            [13,  0]], dtype=np.int32)
+    chain._edges = np.array([[0, 1],
+                             [1,   2],
+                             [2,   3],
+                             [3,   4],
+                             [4,   5],
+                             [5,   6],
+                             [6,   7],
+                             [7,   8],
+                             [8,   9],
+                             [9,  10],
+                             [10, 11],
+                             [11, 12],
+                             [12, 13],
+                             [13,  0]], dtype=np.int32)
     open_edges = 5
     chain.named_partition['interface'] = (0, open_edges)
     chain.named_partition['cavity'] = (open_edges, 14)

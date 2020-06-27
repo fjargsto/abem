@@ -1,7 +1,10 @@
+# cython: profile=True
 # cython: language_level=3, boundscheck=False
 from iops_cpp cimport *
 import numpy as np
+cimport numpy as np
 
+np.import_array()
 
 cpdef hankel1_c(int order, float x):
     cdef Complex z
@@ -158,6 +161,35 @@ cpdef n_2d_off(float k, float[:] p, float[:] normal_p, float[:] qa, float[:] qb)
     cdef Float2 *b = <Float2*>&qb[0]
     N_2D_OFF(k, cp, c_normal_p, a, b, &result)
     return np.complex64(result.re + result.im * 1j)
+
+
+cpdef boundary_matrices_2d(float k, mu_, float[:, :, :] edges_, np.complex64_t[:, :] A, np.complex64_t[:, :] B,
+                           orientation_):
+    cdef Complex mu = Complex(mu_.real, mu_.imag)
+    cdef LineSegment *p_edges = <LineSegment*>&edges_[0, 0, 0]
+    cdef float orientation
+    if orientation_ == "interior":
+        orientation = -1.0
+    elif orientation_ == "exterior":
+        orientation = 1.0
+    else:
+        assert False, "Invalid orientation: {}".format(orientation_)
+    BOUNDARY_MATRICES_2D(k, &mu, p_edges, <Complex*>&A[0, 0], <Complex*>&B[0, 0], edges_.shape[0], orientation)
+
+cpdef compute_solution_matrices(float k, samples, edges):
+    L = np.empty((samples.shape[0], edges.shape[0]), dtype=np.complex64)
+    M = np.empty((samples.shape[0], edges.shape[0]), dtype=np.complex64)
+    cdef np.complex64_t[:, :] viewL = L
+    cdef np.complex64_t[:, :] viewM = M
+    cdef float[:, :] viewSamples = samples
+    cdef float[:, :, :] viewEdges = edges
+    cdef float orientation
+    cdef unsigned int num_samples = samples.shape[0]
+    cdef unsigned int num_edges= edges.shape[0]
+    with nogil:
+        SOLUTION_MATRICES_2D(k, <Float2*>&viewSamples[0, 0], <LineSegment*>&viewEdges[0, 0, 0],
+                             <Complex*>&viewL[0, 0], <Complex*>&viewM[0, 0], num_samples, num_edges)
+    return L, M
 
 
 # -----------------------------------------------------------------------------
