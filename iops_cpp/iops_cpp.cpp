@@ -159,28 +159,9 @@ std::complex<float> complexLineIntegral(std::complex<float> (*integrand)(Float2,
   return sum;
 }
 
-/* --------------------------------------------------------------------------  */
-/*                       2D discrete Helmholtz operators.                      */
-/* --------------------------------------------------------------------------- */
-
 // -----------------------------------------------------------------------------
-// Green's functions
-//
-std::complex<float> green_2d(float k, float r) {
-  return 0.25f * 1if * hankel1(0, k * r);
-}
-
-float green0_2d(float r) {
-  return -0.5f * M_1_PI * log(r);
-}
-
-std::complex<float> dgreen_dr_2d(float k, float r) {
-  return -0.25if * k * hankel1(1, k * r);
-}
-
-float dgreen0_dr_2d(float r) {
-  return -0.5f * M_1_PI / r;
-}
+// 2D discrete Helmholtz operators.
+// -----------------------------------------------------------------------------
 
 typedef struct {
   float k;
@@ -682,6 +663,59 @@ void N_2D(float k, const Float2 *pp, const Float2 *p_normal_p, const Float2 *pa,
   }
   pResult->re = z.real();
   pResult->im = z.imag();
+}
+
+
+// -----------------------------------------------------------------------------
+// 2D  matrix generators
+// -----------------------------------------------------------------------------
+
+void BOUNDARY_MATRICES_2D(float k, const Complex *p_mu_, const LineSegment* p_edges, Complex* p_a_, Complex* p_b_,
+			  unsigned int N, float orientation) {
+  std::complex<float> mu = *reinterpret_cast<const std::complex<float>*>(p_mu_);
+  std::complex<float>* p_a = reinterpret_cast<std::complex<float>*>(p_a_);
+  std::complex<float>* p_b = reinterpret_cast<std::complex<float>*>(p_b_);
+  #pragma omp parallel for
+  for (unsigned int i = 0; i < N; ++i) {
+    const LineSegment segment_i = p_edges[i];
+    Float2 p = 0.5f * (segment_i.b + segment_i.a);
+    Float2 n_p = normal(segment_i.a, segment_i.b);
+    for (unsigned int j = 0; j < N; ++j) {
+      const LineSegment segment_j = p_edges[j];
+      std::complex<float> l, m, mt, n;
+      if (i == j) {
+	l = l_2d_on(k, &p, &segment_j.a, &segment_j.b);
+	m = 0.0f;
+	mt = 0.0f;
+	n = n_2d_on(k, &p, &n_p, &segment_j.a, &segment_j.b);
+      } else {
+	l = l_2d_off(k, &p, &segment_j.a, &segment_j.b);
+	m = m_2d_off(k, &p, &segment_j.a, &segment_j.b);
+	mt = mt_2d_off(k, &p, &n_p, &segment_j.a, &segment_j.b);
+	n = n_2d_off(k, &p, &n_p, &segment_j.a, &segment_j.b);
+      }
+      p_a[i * N + j] = l + mt * mu;
+      p_b[i * N + j] = m + n * mu;
+    }
+    p_a[i * N + i] += orientation * 0.5f * mu;
+    p_b[i * N + i] -= orientation * 0.5f;
+  }
+}
+
+  
+void SOLUTION_MATRICES_2D(float k, const Float2* p_samples, const LineSegment* p_edges, Complex* p_l_, Complex* p_m_,
+			  unsigned int N, unsigned int M) {
+  std::complex<float>* p_l = reinterpret_cast<std::complex<float>*>(p_l_);
+  std::complex<float>* p_m = reinterpret_cast<std::complex<float>*>(p_m_);
+
+  #pragma omp parallel for
+  for (unsigned int i = 0; i < N; ++i) {
+    for (unsigned int j = 0; j < M; ++j) {
+      const LineSegment segment_j = p_edges[j];
+      p_l[i * M + j] = l_2d_off(k, &p_samples[i], &segment_j.a, &segment_j.b);
+      p_m[i * M + j] = m_2d_off(k, &p_samples[i], &segment_j.a, &segment_j.b);
+    }
+  }
 }
 
 /* --------------------------------------------------------------------------  */

@@ -63,10 +63,10 @@ inline float norm(const Float2& v) {
 }
 
 inline Float2 normal(const Float2& a, const Float2& b) {
-  Float2 vec = a - b;
-  float len = norm(vec);
+  Float2 ab = b - a;
+  float l = norm(ab);
 
-  return Float2(vec.y / len, -vec.x / len);
+  return Float2(-ab.y / l, ab.x / l);
 }
 
 
@@ -230,6 +230,9 @@ std::complex<float> complexLineIntegral(std::complex<float> (*integrand)(Float2,
 
 void Hankel1(int order, float x, Complex* pz);
 
+// ----------------------------------------------------------------------------
+// 2D Integral Operators
+//
 void L_2D(float k, const Float2* pp, const Float2* pa, const Float2* pb, bool pOnElement, Complex* pResult);
 void L_2D_ON_K0(const Float2* pa, const Float2* pb, Complex* pResult);
 void L_2D_ON(float k, const Float2* pp, const Float2* pa, const Float2* pb, Complex* pResult);
@@ -252,6 +255,23 @@ void N_2D_ON(float k, const Float2* pp, const Float2* p_normal_p, const Float2* 
 void N_2D_OFF_K0(const Float2* pp, const Float2* p_normal_p, const Float2* pa, const Float2* pb, Complex* pResult);
 void N_2D_OFF(float k, const Float2* pp, const Float2* p_normal_p, const Float2* pa, const Float2* pb, Complex* pResult);
 
+// ----------------------------------------------------------------------------
+// 2D Matrix generators
+//
+struct LineSegment{
+    Float2 a;
+    Float2 b;
+};
+
+void BOUNDARY_MATRICES_2D(float k, const Complex *p_mu, const LineSegment* p_edges, Complex* p_a, Complex* p_b,
+                          unsigned int N, float orientation);
+void SOLUTION_MATRICES_2D(float k, const Float2* samples, const LineSegment* p_edges,
+                          Complex* p_l, Complex* p_m, unsigned int N, unsigned int M);
+
+
+// ----------------------------------------------------------------------------
+// Radial Integral Operators
+//
 void ComputeL_RAD(float k, Float2 p, Float2 a, Float2 b, bool pOnElement, Complex * pResult);
 void ComputeM_RAD(float k, Float2 p, Float2 a, Float2 b, bool pOnElement, Complex * pResult);
 void ComputeMt_RAD(float k, Float2 p, Float2 vec_p, Float2 a, Float2 b, bool pOnElement, Complex * pResult);

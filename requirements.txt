@@ -5,3 +5,6 @@ Cython
 setuptools
 abem
 tabulate
+
+matplotlib
+ipython

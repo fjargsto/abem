@@ -2,10 +2,13 @@ from setuptools import setup, Extension
 from Cython.Build import cythonize
 import numpy
 
+
+
 extensions = [Extension("*",  sources=["src/*.pyx"], include_dirs=[numpy.get_include()],
                         define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")]),
               Extension("iops_cpp", sources=["iops_cpp/helmholtz_integrals.pyx", "iops_cpp/iops_cpp.cpp"],
-                        language="c++", )]
+                        language="c++", include_dirs=[numpy.get_include()],
+                        extra_compile_args=['-fopenmp'], extra_link_args=['-fopenmp'],),]
 
 
 def readme():
@@ -32,7 +35,7 @@ setup(
     packages=["abem", "iops_sci"],
     install_requires=requirements(),
     zip_safe=False,
-    ext_modules=cythonize(extensions),
+    ext_modules=cythonize(extensions, annotate=True),
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     test_suite="tests",
