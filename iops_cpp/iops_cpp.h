@@ -267,6 +267,8 @@ void BOUNDARY_MATRICES_2D(float k, const Complex *p_mu, const LineSegment* p_edg
                           unsigned int N, float orientation);
 void SOLUTION_MATRICES_2D(float k, const Float2* samples, const LineSegment* p_edges,
                           Complex* p_l, Complex* p_m, unsigned int N, unsigned int M);
+void SAMPLE_PHI_2D(float k, const Float2* p_samples, const LineSegment* viewEdges, unsigned int N, unsigned int M,
+		   const Complex* p_solution_phi, const Complex* p_solution_v,  Complex* p_phi);
 
 
 // ----------------------------------------------------------------------------

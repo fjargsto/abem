@@ -78,6 +78,8 @@ cdef extern from "iops_cpp.h":
     void SOLUTION_MATRICES_2D(float k, const Float2* p_samples, const LineSegment* p_edges,
                               Complex* p_l, Complex* p_m,
                               unsigned int N, unsigned int M) nogil except +
+    void SAMPLE_PHI_2D(float k, const Float2* p_samples, const LineSegment* viewEdges, unsigned int N, unsigned int M,
+                       const Complex* p_solution_phi, const Complex* p_solution_v,  Complex* p_phi) nogil except +
 
 
     # -------------------------------------------------------------------------

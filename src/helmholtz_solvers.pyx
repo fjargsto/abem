@@ -1,6 +1,7 @@
 # cython: profile=True
 import numpy as np
 cimport numpy as np
+
 from solver import Solver
 from acoustic_boundaries import ExteriorBoundarySolution, InteriorBoundarySolution
 #from iops_pyx import * # Cython integral operators (slow!)
@@ -14,7 +15,7 @@ class HelmholtzSolver(Solver):
         mu = mu or (1j / (k + 1))
         assert boundary_condition.f.size == self.len()
         A, B = self.compute_boundary_matrices(k, mu, orientation)
-        c = np.empty(self.len(), dtype=complex)
+        c = np.empty(self.len(), dtype=np.complex64)
         for i in range(self.len()):
             c[i] = boundary_incidence.phi[i] + mu * boundary_incidence.v[i]
         if 'exterior' == orientation:
@@ -37,8 +38,8 @@ class HelmholtzSolver(Solver):
         B = np.copy(Bi)
         c = np.copy(ci)
 
-        x = np.empty(c.size, dtype=np.complex)
-        y = np.empty(c.size, dtype=np.complex)
+        x = np.empty(c.size, dtype=np.complex64)
+        y = np.empty(c.size, dtype=np.complex64)
 
         gamma = np.linalg.norm(B, np.inf) / np.linalg.norm(A, np.inf)
         swapXY = np.empty(c.size, dtype=bool)
@@ -85,6 +86,7 @@ class HelmholtzSolver2D(HelmholtzSolver):
         self.centers = self.geometry.centers()
         # length of the boundary elements (for the 3d shapes this is replaced by aArea)
         self.lengths = self.geometry.lengths()
+        self.useGPU = True
 
     def compute_boundary_matrices(self, k, mu, orientation, cpp=True):
         A = np.empty((self.len(), self.len()), dtype=np.complex64)
@@ -128,23 +130,41 @@ class HelmholtzSolver2D(HelmholtzSolver):
     def compute_boundary_matrices_exterior(self, k, mu):
         return self.compute_boundary_matrices(k, mu, 'exterior')
 
-    def solve_samples(self, solution, incident_phis, samples, orientation):
+    def solve_samples(self, solution, incident_phis, samples, orientation, cpp=True):
         assert incident_phis.shape == samples.shape[:-1], \
             "Incident phi vector and sample points vector must match"
 
-        L, M = compute_solution_matrices(solution.k, samples, self.geometry.edges())
-        if orientation == 'interior':
-            Lv = L.dot(solution.velocities)
-            Mv = M.dot(solution.phis)
-            result = incident_phis + Lv - Mv
-        elif orientation == 'exterior':
-            Lv = L.dot(solution.velocities)
-            Mv = M.dot(solution.phis)
-            result = incident_phis - Lv + Mv
-        else:
-            assert False, 'Invalid orientation: {}'.format(orientation)
+        if not cpp:
+            result = np.empty(samples.shape[0], dtype=complex)
 
-        return result
+            for i in range(incident_phis.size):
+                p = samples[i]
+                sum = incident_phis[i]
+                for j in range(solution.phis.size):
+                    qa, qb = self.geometry.edge(j)
+
+                    element_l = l_2d(solution.k, p, qa, qb, False)
+                    element_m = m_2d(solution.k, p, qa, qb, False)
+                    if orientation == 'interior':
+                        sum += element_l * solution.velocities[j] - element_m * solution.phis[j]
+                    elif orientation == 'exterior':
+                        sum -= element_l * solution.velocities[j] - element_m * solution.phis[j]
+                    else:
+                        assert False, 'Invalid orientation: {}'.format(orientation)
+                result[i] = sum
+
+            return result
+        else:
+            phi = compute_sample_phi(solution, samples, self.geometry.edges())
+
+            if orientation == 'interior':
+                result = incident_phis + phi
+            elif orientation == 'exterior':
+                result = incident_phis - phi
+            else:
+                assert False, 'Invalid orientation: {}'.format(orientation)
+
+            return result
 
 
 class InteriorHelmholtzSolver2D(HelmholtzSolver2D):

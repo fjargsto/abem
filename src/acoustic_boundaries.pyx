@@ -1,3 +1,4 @@
+# cython: profile=True
 import numpy as np
 import acoustic_properties
 

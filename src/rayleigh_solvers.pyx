@@ -1,3 +1,4 @@
+# cython: profile=True
 from solver import Solver
 from acoustic_boundaries import SampleSolution, RayleighBoundarySolution, RayleighCavityBoundarySolution
 from iops_pyx import * # Cython integral operators (slow!)
