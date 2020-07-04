@@ -1,3 +1,4 @@
+# cython: profile=True
 from acoustic_boundaries import BoundaryCondition
 
 

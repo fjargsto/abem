@@ -718,6 +718,26 @@ void SOLUTION_MATRICES_2D(float k, const Float2* p_samples, const LineSegment* p
   }
 }
 
+
+void SAMPLE_PHI_2D(float k, const Float2* p_samples, const LineSegment* p_edges, unsigned int N, unsigned int M,
+		   const Complex* p_solution_phi, const Complex* p_solution_v,  Complex* p_sample_phi) {
+  const std::complex<float>* p_sol_phi = reinterpret_cast<const std::complex<float>*>(p_solution_phi);
+  const std::complex<float>* p_sol_v   = reinterpret_cast<const std::complex<float>*>(p_solution_v);
+  std::complex<float>* p_phi = reinterpret_cast<std::complex<float>*>(p_sample_phi);
+
+  #pragma omp parallel for
+  for (unsigned int i = 0; i < N; ++i) {
+    std::complex<float> sum = 0.0f;
+    for (unsigned int j = 0; j < M; ++j) {
+      const LineSegment segment_j = p_edges[j];
+      const std::complex<float> l = l_2d_off(k, &p_samples[i], &segment_j.a, &segment_j.b);
+      const std::complex<float> m = m_2d_off(k, &p_samples[i], &segment_j.a, &segment_j.b);
+      sum += l * p_sol_v[j] - m * p_sol_phi[j];
+    }
+    p_phi[i] = sum;
+  }
+}
+
 /* --------------------------------------------------------------------------  */
 /*         Radially symmetrical discrete Helmholtz operators.                  */
 /* --------------------------------------------------------------------------- */

@@ -35,7 +35,7 @@ setup(
     packages=["abem", "iops_sci"],
     install_requires=requirements(),
     zip_safe=False,
-    ext_modules=cythonize(extensions, annotate=True),
+    ext_modules=cythonize(extensions), #, annotate=True), # for .html profiling info
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     test_suite="tests",

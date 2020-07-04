@@ -174,7 +174,8 @@ cpdef boundary_matrices_2d(float k, mu_, float[:, :, :] edges_, np.complex64_t[:
         orientation = 1.0
     else:
         assert False, "Invalid orientation: {}".format(orientation_)
-    BOUNDARY_MATRICES_2D(k, &mu, p_edges, <Complex*>&A[0, 0], <Complex*>&B[0, 0], edges_.shape[0], orientation)
+    with nogil:
+        BOUNDARY_MATRICES_2D(k, &mu, p_edges, <Complex*>&A[0, 0], <Complex*>&B[0, 0], edges_.shape[0], orientation)
 
 cpdef compute_solution_matrices(float k, samples, edges):
     L = np.empty((samples.shape[0], edges.shape[0]), dtype=np.complex64)
@@ -190,6 +191,22 @@ cpdef compute_solution_matrices(float k, samples, edges):
         SOLUTION_MATRICES_2D(k, <Float2*>&viewSamples[0, 0], <LineSegment*>&viewEdges[0, 0, 0],
                              <Complex*>&viewL[0, 0], <Complex*>&viewM[0, 0], num_samples, num_edges)
     return L, M
+
+cpdef compute_sample_phi(solution, samples, edges):
+    phi = np.empty(samples.shape[0], dtype=np.complex64)
+    cdef float k = solution.k
+    cdef np.complex64_t[:] solution_phi = solution.phis
+    cdef np.complex64_t[:] solution_v = solution.velocities
+    cdef float[:, :] viewSamples = samples
+    cdef float[:, :, :] viewEdges = edges
+    cdef unsigned int num_samples = samples.shape[0]
+    cdef unsigned int num_edges = edges.shape[0]
+    cdef np.complex64_t[:] viewPhi = phi
+    with nogil:
+        SAMPLE_PHI_2D(k, <Float2*>&viewSamples[0, 0], <LineSegment*>&viewEdges[0, 0, 0], num_samples, num_edges,
+                      <Complex*>&solution_phi[0], <Complex*>&solution_v[0],  <Complex*>&viewPhi[0])
+
+    return phi
 
 
 # -----------------------------------------------------------------------------
